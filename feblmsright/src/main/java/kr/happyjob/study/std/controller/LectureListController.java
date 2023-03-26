@@ -50,7 +50,7 @@ public class LectureListController {
 	}
 	
 	/**
-	 * 초기화면
+	 * vue 초기화면
 	 */
 	@RequestMapping("lectureListVue.do")
 	public String lectureListVue(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
@@ -89,6 +89,43 @@ public class LectureListController {
 
 		return "std/lectureList/lectureListSearch";
 	}
+	/**
+	 vue list 출력하기
+	 Map형식으로 받아서 ResponseBody로 비동기 처리하기
+	 */
+	@RequestMapping("lectureListSearchVue.do")
+	@ResponseBody
+	public Map<String,Object> lectureListSearchVue(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+												   HttpServletResponse response, HttpSession session) throws Exception {
+
+		logger.info("+ Start " + className + ".lectureListSearch");
+		logger.info("   - paramMap : " + paramMap);
+
+		Map<String, Object> returnMap = new HashMap<String, Object>();
+
+		int pagenum =Integer.parseInt(String.valueOf(paramMap.get("pagenum")));
+		int pageSize =Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startnum = (pagenum - 1) * pageSize;
+
+		paramMap.put("startnum", startnum);
+		paramMap.put("pageSize", pageSize);
+
+		List<LectureListModel> lectureListSearch = lecturelistService.lectureListSearch(paramMap);
+		int totalcnt = lecturelistService.lectureListCnt(paramMap);
+
+		//model.addAttribute("lectureListSearch", lectureListSearch);
+		//model.addAttribute("totalcnt", totalcnt);
+
+		returnMap.put("lectureListSearch", lectureListSearch);
+		returnMap.put("totalcnt", totalcnt);
+
+		logger.info("+ End " + className + ".lectureListSearch");
+
+		return returnMap;
+	}
+
+
+
 	//planList 조회 lecturePlanSelect
 	
 	@RequestMapping("lecturePlanSelect.do")
@@ -132,7 +169,8 @@ public class LectureListController {
 
 		return returnmap;
 	}
-	
+
+
 	@RequestMapping("studentInsert.do")
 	@ResponseBody
 	public Map<String, Object> studentInsert(Model model, @RequestParam Map<String, Object> paramMap,
