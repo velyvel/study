@@ -1,5 +1,6 @@
 package kr.happyjob.study.adm.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import kr.happyjob.study.adm.model.TestResultModel;
 import kr.happyjob.study.adm.service.TestResultService;
@@ -91,6 +93,37 @@ public class TestResultController {
 	}
 	
 	/**
+	 * 개설 강의 목록 조회 Vue
+	 */
+	@RequestMapping("vuetestResultLectureList.do")
+	@ResponseBody
+	public Map<String, Object> vuetestResultLectureList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".vuetestResultLectureList");
+		logger.info("   - paramMap : " + paramMap);
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		int pagenum =Integer.parseInt(String.valueOf(paramMap.get("pagenum")));
+		int pageSize =Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startnum = (pagenum - 1) * pageSize;
+
+		paramMap.put("startnum", startnum);
+		paramMap.put("pageSize", pageSize);
+		
+		List<TestResultModel> testResultLectureList = testResultService.testResultLectureList(paramMap);
+		int totalcnt = testResultService.testResultLectureListCnt(paramMap);
+		
+		returnmap.put("testResultLectureList", testResultLectureList);
+		returnmap.put("totalcnt", totalcnt);
+		
+		logger.info("+ End " + className + ".vuetestResultLectureList");
+
+		return returnmap;
+	}
+	
+	/**
 	 * 학생 목록 조회
 	 */
 	@RequestMapping("testResultSelect.do")
@@ -116,6 +149,37 @@ public class TestResultController {
 		logger.info("+ End " + className + ".testResultSelect");
 
 		return "adm/testResult/testResultStudentList";
+	}
+	
+	/**
+	 * 학생 목록 조회 Vue
+	 */
+	@RequestMapping("vuetestResultSelect.do")
+	@ResponseBody
+	public Map<String, Object> vuetestResultSelect(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".vuetestResultSelect");
+		logger.info("   - paramMap : " + paramMap);
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		int pagenum =Integer.parseInt(String.valueOf(paramMap.get("pagenum")));
+		int pageSize =Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startnum = (pagenum - 1) * pageSize;
+
+		paramMap.put("startnum", startnum);
+		paramMap.put("pageSize", pageSize);
+		
+		List<TestResultModel> testResultSelect = testResultService.testResultSelect(paramMap);
+		int totalcnt = testResultService.testResultSelectCnt(paramMap);
+		
+		returnmap.put("testResultSelect", testResultSelect);
+		returnmap.put("totalcnt", totalcnt);
+		
+		logger.info("+ End " + className + ".vuetestResultSelect");
+
+		return returnmap;
 	}
 
 

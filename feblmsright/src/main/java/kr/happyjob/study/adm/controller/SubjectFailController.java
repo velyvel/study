@@ -1,6 +1,7 @@
 package kr.happyjob.study.adm.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,11 +17,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import kr.happyjob.study.adm.model.SubjectFailModel;
 import kr.happyjob.study.adm.service.SubjectFailService;
 
 @Controller
 @RequestMapping("/adm/")
 public class SubjectFailController {
+	
 	@Autowired
 	SubjectFailService sfs;
 
@@ -75,11 +78,53 @@ public class SubjectFailController {
 
 		return "adm/subjectFail/subjectFailList";
 	}
+	
+	// 페이지 이동 후 init에서 리스트 가져오기 실행 후 jstl로 이동 작업
+	@RequestMapping("vuesubjectFailList.do")
+	@ResponseBody
+	public Map<String, Object> vuesubjectFailList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".vuesubjectFailList");
+		logger.info("   - paramMap : " + paramMap);
+		
+		// 선언단
+		int pagenum = Integer.parseInt( String.valueOf( paramMap.get("pagenum") ) );
+		logger.info(pagenum);
+		int endPage = Integer.parseInt( String.valueOf( paramMap.get("listCount") ) );
+		logger.info(endPage);
+		int startPage = (pagenum - 1) * endPage;
+		logger.info(startPage);
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		logger.info(returnmap);
+
+		// 페이징 처리를 위한 파라미터 추가
+		paramMap.put("startPage", startPage);
+		paramMap.put("endPage", endPage);
+
+		List<SubjectFailModel> getSubjectFailList = sfs.getSubjectFailList(paramMap);
+		int totalcnt = sfs.getSubjectFailTotal(paramMap);
+		
+		logger.info(getSubjectFailList);
+
+		// DB 접근해서 리스트 + 카운트 가져와서 model에 추가
+		returnmap.put("subjectFailList", getSubjectFailList);
+		returnmap.put("totalcnt", totalcnt);
+		
+		logger.info("+ End " + className + ".vuesubjectFailList");
+
+		return returnmap;
+	}
 
 	// 과목별 상세 비율 조회
 	@ResponseBody
 	@RequestMapping("subjectFailRatio.do")
 	public Map<String, Object> getFailureRatio(@RequestParam Map<String, Object> paramMap) throws Exception {
+		
+		SubjectFailModel ratioInfo = sfs.getSubjectFailRatio(paramMap);
+		
 		// 선언단
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 
@@ -87,7 +132,7 @@ public class SubjectFailController {
 		logger.info("      paramMap Check    ::      " + paramMap);
 
 		// DB 접근해서 리스트 + 카운트 가져와서 resultMap에 추가
-		resultMap.put("subjectFailRatio", sfs.getSubjectFailRatio(paramMap));
+		resultMap.put("ratioInfo", ratioInfo);
 
 		return resultMap;
 	}

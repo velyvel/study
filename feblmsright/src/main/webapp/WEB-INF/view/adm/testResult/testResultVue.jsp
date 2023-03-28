@@ -14,24 +14,85 @@
 <!-- sweet swal import -->
 
 <script type="text/javascript">
+	
+	// 변수 선언
+	var searcharea;
+	var listarea;
+	var lecList;
 
-	// 강의 목록 페이징 설정
+/* 	// 강의 목록 페이징 설정
 	var pageSizetestResultLecture = 5;
 	var pageBlockSizetestResultLecture = 5;
 	
 	// 학생 목록 페이징 설정
 	var pageSizetestResultStudent = 5;
-	var pageBlockSizetestResultStudent = 10;
+	var pageBlockSizetestResultStudent = 10; */
 	
 	
 	/** OnLoad event */ 
 	$(function() {
 		comcombo("lecture_no", "lectureno", "all", "");
 		
+		init();
+		
+		testResultLectureList();
+		
 		// 버튼 이벤트 등록
 		fRegisterButtonClickEvent();
 	});
 	
+	function init() {	
+		
+		searcharea = new Vue({
+			el : "#searcharea",
+			data : {
+				lectureNameSearch : ""
+			}
+		});
+		
+		listarea = new Vue({
+			el : "#listarea",
+            data : {
+            	       listitem : [],
+            	       totalcnt : 0,
+            	       cpage :0,      //현재 조회하고있는 page
+            	       pagesize : 5,
+            	       blocksize : 5,//pagenavigation 번호 몇까지 나오는지
+            	       pagenavi : "", // vhtml 연결할 놈이어서 str로
+            }, methods : {
+            	testResultSelect : function(lecture_no) {
+            		testResultSelect(lecture_no);
+               	 }
+            }
+		});
+		
+		lecList = new Vue ({
+			el : "#lecList",
+			data : {
+					listitem : [],
+	     	        totalcnt : 0,
+	     	        cpage :0,      //현재 조회하고있는 page
+	     	        pagesize : 5,
+	     	        blocksize : 10,//pagenavigation 번호 몇까지 나오는지
+	     	        pagenavi : "", // vhtml 연결할 놈이어서 str로
+	     	        lectureno : 0,
+	     	        passflag : false,
+	     	        //passrs : true,
+
+			}, /* methods: {
+				passrs:function() {
+					if(score < 60){
+						passrs = true;
+					} else {
+						passrs = false;
+					}
+				}
+			} */
+			
+		});
+		
+		
+	} //init
 
 	/** 버튼 이벤트 등록 */
 	function fRegisterButtonClickEvent() {
@@ -50,6 +111,72 @@
 					break;
 			}
 		});
+	}
+	
+
+	
+	/* 강의 목록 조회 */
+	function testResultLectureList(pagenum){
+		
+		pagenum = pagenum || 1;
+
+		
+		var param = {
+				
+				pagenum : pagenum,
+				pageSize : listarea.pagesize,
+				lectureNameSearch : searcharea.lectureNameSearch
+		};
+		
+		var listcallback = function(returndata) {
+			console.log("returndata : " + JSON.stringify(returndata));
+			
+			listarea.listitem = returndata.testResultLectureList;
+			listarea.totalcnt = returndata.totalcnt;
+			
+		var paginationHtml = getPaginationHtml(pagenum, listarea.totalcnt, listarea.pagesize, listarea.blocksize, 'testResultLectureList');
+			
+			listarea.pagenavi = paginationHtml;
+			
+		};
+		
+		callAjax("/adm/vuetestResultLectureList.do", "post" , "json", "true", param, listcallback);
+		
+	}
+	
+	function testResultSelect(lectureno) {
+		lecList.passflag = true;
+		lecList.lectureno = lectureno;
+		
+		fn_testResultSelect();
+	}
+	
+	/* 학생 목록 조회 */
+	function fn_testResultSelect(pagenum){
+		
+		pagenum = pagenum || 1;
+		
+		var param = {
+				
+				pagenum : pagenum,
+				pageSize : lecList.pagesize,
+				lectureno : lecList.lectureno,
+				lectureNameSearch : searcharea.lectureNameSearch
+		};
+		
+		var listcallback = function(returndata) {
+			console.log("returndata : " + JSON.stringify(returndata));
+			
+			lecList.listitem = returndata.testResultSelect
+			lecList.totalcnt = returndata.totalcnt
+			
+			var paginationHtml = getPaginationHtml(pagenum, lecList.totalcnt, lecList.pagesize, lecList.blocksize, 'fn_testResultSelect');
+			
+			lecList.pagenavi = paginationHtml;			
+		};
+		
+		callAjax("/adm/vuetestResultSelect.do", "post" , "json", "true", param, listcallback);
+		
 	}
 	
 	
@@ -89,16 +216,16 @@
 								<a href="../adm/testResult.do" class="btn_set refresh">새로고침</a>
 						</p>
 
-						<p class="conTitle">
+						<p class="conTitle" id="searcharea">
 							<span>시험 결과</span> <span class="fr">
 							    
 								강의명
-		     	                <input type="text" style="width: 300px; height: 25px;" id="lectureNameSearch" name="lectureNameSearch">                    
+		     	                <input type="text" style="width: 300px; height: 25px;" id="lectureNameSearch" name="lectureNameSearch" v-model="lectureNameSearch">                    
 			                    <a href="" class="btnType blue" id="btnLectureSearch" name="btn"><span>검  색</span></a>
 							</span>
 						</p>
 						
-						<div class="divtestResultLecture">
+						<div id="listarea">
 							
 							<table class="col">
 								<caption>caption</caption>
@@ -123,16 +250,41 @@
 										<th scope="col">미응시인원</th>
 									</tr>
 								</thead>
-								<tbody id="listtestResultLecture"></tbody>
+								
+								<template v-if="totalcnt == 0">
+									<tbody>
+										<tr>
+											<td colspan=7> 조회된 데이터가 없습니다. </td>
+										</tr>
+									</tbody>
+								</template>
+								
+								<template v-else>
+									<tbody v-for = "(item,index) in listitem">
+										<tr >
+											<td>{{ item.lecture_seq }}</td>
+											<td>
+											<a href="" @click.prevent="testResultSelect(item.lecture_no)">
+											    <span>{{ item.lecture_name }}</span>
+											</a>
+											</td>
+											<td>{{ item.name }}</td>
+											<td>{{ item.test_no }}</td>
+											<td>{{ item.lecture_person }}</td>
+											<td>{{ item.aft }}</td>
+											<td>{{ item.bef }}</td>
+										</tr>
+									</tbody>
+								</template>
 							</table>
+						<div class="paging_area"  id="testResultLecturePagination" v-html="pagenavi"> </div>
 						</div>
 	
-						<div class="paging_area"  id="testResultLecturePagination"> </div>
 						
 						<br/>
 						<br/>
 						
-						<div class="divtestResultStudent">
+						<div id="lecList" v-show="passflag">
 							
 							<table class="col">
 								<caption>caption</caption>
@@ -151,11 +303,29 @@
 										<th scope="col">상태</th>
 									</tr>
 								</thead>
-								<tbody id="listtestResultStudent"></tbody>
+								
+								<template v-if="totalcnt == 0">
+									<tbody>
+										<tr>
+											<td colspan=4> 조회된 데이터가 없습니다. </td>
+										</tr>
+									</tbody>
+								</template>
+								<template v-else>
+									<tbody v-for = "(item,index) in listitem">
+										<tr>
+											<td>{{ item.loginID }}</td>
+											<td>{{ item.name }}</td>
+											<td>{{ item.score }}</td>
+											<td v-if=" item.score >= 60">통과</td>
+											<td v-else>과락</td>
+										</tr>
+									</tbody>
+								</template>
 							</table>
+						<div class="paging_area"  id="testResultStudentPagination" v-html="pagenavi"> </div>
 						</div>
 	
-						<div class="paging_area"  id="testResultStudentPagination"> </div>
 						
 						
 						

@@ -92,6 +92,37 @@ public class StudentInfoController {
 		return "tut/studentInfo/lectureInfoList";
 	}
 	
+	// 수업 리스트
+		@RequestMapping("vuelectureInfoList.do")
+		@ResponseBody
+		public Map<String, Object> vuelectureInfoList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+				HttpServletResponse response, HttpSession session) throws Exception {
+			
+			logger.info("+ Start " + className + ".lectureInfoList");
+			logger.info("   - paramMap : " + paramMap);
+			
+			int pagenum = Integer.parseInt( String.valueOf(paramMap.get("pagenum")));
+			int pageSize = Integer.parseInt( String.valueOf(paramMap.get("pageSize")));
+			int startnum = (pagenum - 1)*pageSize;
+			
+			Map <String, Object> returnMap = new HashMap<String, Object>();
+			
+			paramMap.put("startnum", startnum);
+			paramMap.put("pageSize",pageSize);
+			session.setAttribute("loginID",paramMap.get("loginID"));
+			
+			List<StudentInfoModel> lectureInfo = studentInfoService.lectureInfoList(paramMap);
+			
+			int totalcnt = studentInfoService.lectureInfoListCnt(paramMap);
+			
+			returnMap.put("lectureInfo",lectureInfo);
+			returnMap.put("totalcnt",totalcnt);
+			
+			logger.info("+ End " + className + ".lectureInfoList");
+
+			return returnMap;
+		}
+	
 	// 수업단건 조회
 	@RequestMapping("lectureInfoSearch.do")
 	public Map<String,Object> lectureInfoSearch (Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
@@ -138,6 +169,37 @@ public class StudentInfoController {
 
 			return "tut/studentInfo/studentInfoList";
 		}
+		
+		// 수강학생 리스트
+				@RequestMapping("vuestudentInfoList.do")
+				@ResponseBody
+				public Map<String, Object> vuestudentInfoList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+						HttpServletResponse response, HttpSession session) throws Exception {
+					
+					logger.info("+ Start " + className + ".studentInfoList");
+					logger.info("   - paramMap : " + paramMap);
+					
+					int spagenum = Integer.parseInt( String.valueOf(paramMap.get("spagenum")));
+					int pageSize = Integer.parseInt( String.valueOf(paramMap.get("pageSize")));
+					int startnum = (spagenum - 1)*pageSize;
+					
+					paramMap.put("startnum", startnum);
+					paramMap.put("pageSize",pageSize);
+					session.setAttribute("lecture_seq",paramMap.get("lecture_seq"));
+					
+					Map <String, Object> returnMap = new HashMap <String, Object>();
+					
+					List<StudentInfoModel> studentInfo = studentInfoService.studentInfoList(paramMap);
+					
+					int stotalcnt = studentInfoService.studentInfoListCnt(paramMap);
+					
+					returnMap.put("studentInfo",studentInfo);
+					returnMap.put("stotalcnt",stotalcnt);
+					
+					logger.info("+ End " + className + ".studentInfoList");
+
+					return returnMap;
+				}
 	/*수강생 수강여부 '승인'*/
 		@RequestMapping("studentInfoConfirmYes.do")
 		@ResponseBody

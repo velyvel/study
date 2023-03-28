@@ -91,6 +91,35 @@ public class SurveyController {
 		return "adm/survey/surveyTeacherList";
 	}
 	
+	// 설문조사 강사 목록 조회
+	@RequestMapping("vueSurveyTeacherList.do")
+	@ResponseBody
+	public Map<String, Object> vueSurveyTeacherList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".vueSurveyTeacherList");
+		logger.info("   - paramMap : " + paramMap);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		
+		int pageNum = Integer.parseInt(String.valueOf(paramMap.get("pageNum")));
+		int pageSize = Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startPage = (pageNum -1) * pageSize;
+		
+		paramMap.put("pageSize", pageSize);
+		paramMap.put("startPage", startPage);
+		
+		List<SurveyModel> surveyTeacherList = surveyService.surveyTeacherList(paramMap);
+		int totalCnt = surveyService.surveyTeacherListCnt(paramMap);
+		
+		resultMap.put("surveyTeacherList", surveyTeacherList);
+		resultMap.put("totalCnt", totalCnt);
+		
+		logger.info("+ End " + className + ".vueSurveyTeacherList");
+		
+		return resultMap;
+	}
+	
 	// 설문조사 강의 목록 조회
 	@RequestMapping("surveyLectureList.do")
 	public String surveyLectureList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
@@ -115,6 +144,35 @@ public class SurveyController {
 		logger.info("+ End " + className + ".surveyLectureList");
 		
 		return "adm/survey/surveyLectureList";
+	}
+	
+	// 설문조사 강의 목록 조회
+	@RequestMapping("vueSurveyLectureList.do")
+	@ResponseBody
+	public Map<String, Object> vueSurveyLectureList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".vueSurveyLectureList");
+		logger.info("   - paramMap : " + paramMap);
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		
+		int pageNum = Integer.parseInt(String.valueOf(paramMap.get("pageNum")));
+		int pageSize = Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startPage = (pageNum - 1) * pageSize;
+		
+		paramMap.put("pageSize", pageSize);
+		paramMap.put("startPage", startPage);
+		
+		List<SurveyModel> surveyLectureList = surveyService.surveyLectureList(paramMap);
+		int totalCnt = surveyService.surveyLectureListCnt(paramMap);
+		
+		resultMap.put("surveyLectureList", surveyLectureList);
+		resultMap.put("totalCnt", totalCnt);
+		
+		logger.info("+ End " + className + ".vueSurveyLectureList");
+		
+		return resultMap;
 	}
 	
 	// 설문조사 결과 조회

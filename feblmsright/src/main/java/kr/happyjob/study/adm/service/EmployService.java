@@ -20,6 +20,9 @@ public interface EmployService {
 	//학생 employee detail 내용 detailcontent
 	public List<EmployModel> detailcontent(Map<String, Object> paramMap);
 	
+	// 학생 employee detail 내용 상세보기
+	public EmployModel sdetailcontent(Map<String, Object> paramMap);
+	
 	//학생 employee detail 리스트 cnt detailcnt
 	public int detailcnt(Map<String, Object> paramMap);
 		
@@ -28,4 +31,7 @@ public interface EmployService {
 	
 	//하단에서 수정 하기.empupdate
 	public int empupdate(Map<String, Object> paramMap);
+	
+	//하단에서 삭제 하기.empdelete
+	public int empdelete(Map<String, Object> paramMap);
 }

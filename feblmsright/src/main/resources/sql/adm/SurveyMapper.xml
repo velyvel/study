@@ -46,7 +46,7 @@
    		 
    		<where>
    			<if test="(lsearch != null) and (!lsearch.equals(''))">
-   				and lc.lecture_name LIKE CONCAT('%', #{lsearch}, '%')
+   				and dc.detail_name LIKE CONCAT('%', #{lsearch}, '%')
    			</if>
    			and lc.loginID = #{loginID}
    		</where>

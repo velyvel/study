@@ -90,6 +90,35 @@ public class TutTestController {
 		
 		return "tut/test/testList";
 	}
+	
+	//시험리스트 Vue
+		@RequestMapping("vuetestList.do")
+		@ResponseBody
+		public Map<String, Object> vuetestList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+				HttpServletResponse response, HttpSession session) throws Exception {
+			
+			logger.info("+ Start " + className + ".vuetestList");
+			logger.info("   - paramMap : " + paramMap);
+			
+			Map<String, Object> returnmap = new HashMap<String, Object>();
+			
+			int pagenum = Integer.parseInt( String.valueOf(paramMap.get("pagenum")));
+			int pageSize = Integer.parseInt( String.valueOf(paramMap.get("pageSize")));
+			int startnum = (pagenum - 1)*pageSize;
+			
+			paramMap.put("startnum", startnum);
+			paramMap.put("pageSize",pageSize);
+			
+			List<TutTestModel> testList = tutTestService.testList(paramMap);
+			int totalcnt = tutTestService.testListCnt(paramMap);
+			
+			returnmap.put("testList",testList);
+			returnmap.put("totalcnt", totalcnt);
+			logger.info("+ End " + className + ".vuetestList");
+			
+			return returnmap;
+		}
+	
 	/*
 	 * 시험 상세 조회
 	 */
@@ -208,6 +237,37 @@ public class TutTestController {
 			
 			return "tut/test/questionList";
 		}
+		
+		//문제리스트 Vue
+				@RequestMapping("vuequestionList.do")
+				@ResponseBody
+				public Map<String, Object> vuequestionList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+						HttpServletResponse response, HttpSession session) throws Exception {
+					
+					logger.info("+ Start " + className + ".vuequestionList");
+					logger.info("   - paramMap : " + paramMap);
+					
+					Map<String, Object> returnmap = new HashMap<String, Object>();
+					
+					/*
+					int pagenum = Integer.parseInt( String.valueOf(paramMap.get("pagenum")));
+					int pageSize = Integer.parseInt( String.valueOf(paramMap.get("pageSize")));
+					int startnum = (pagenum - 1)*pageSize;
+					
+					paramMap.put("startnum", startnum);
+					paramMap.put("pageSize",pageSize);*/
+					
+					List<TutTestModel> questionList = tutTestService.questionList(paramMap);
+					int qtotalcnt = tutTestService.questionListCnt(paramMap);
+					
+					returnmap.put("questionList",questionList);
+					returnmap.put("qtotalcnt", qtotalcnt);
+					
+					logger.info("+ End " + className + ".vuequestionList");
+					
+					return returnmap;
+				}
+		
 		/*
 		 * 문제 상세 조회
 		 */

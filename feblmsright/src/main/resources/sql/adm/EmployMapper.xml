@@ -47,6 +47,21 @@
 	     and ui.loginID = #{stdID}
 	</select>
 	
+	<!-- 하단 학생에 대한 detail 선택 내용 -->
+	<select id="sdetailcontent" resultType="kr.happyjob.study.adm.model.EmployModel">
+		select em.employ_no
+		      , em.loginID
+		      , ui.name
+		      , em.employ_name
+		      , em.employ_state
+		      , em.employ_join
+		      , em.employ_leave
+		  from tb_employ em
+		    inner join tb_userinfo ui on em.loginID = ui.loginID
+		    where em.loginID = #{stdID}
+			 and em.employ_no = #{employ_no}
+	</select>
+	
 	<!-- 취업 정보 등록 학생 cnt 확인하기. -->
 	<select id="detailcnt" resultType="int">
 		select count(*)
@@ -88,5 +103,11 @@
      			, employ_join = #{emp_join}
      			, employ_leave = #{emp_leave}
  			where employ_no = #{emp_no}
+	</update>
+	
+	<!-- 재직여부 delete -->
+	<update id="empdelete">
+		delete from tb_employ
+			where employ_no = #{emp_no}
 	</update>
 </mapper>

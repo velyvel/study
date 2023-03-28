@@ -15,17 +15,114 @@
 
 <script type="text/javascript">
 
-	// 그룹코드 페이징 설정
-	var emppageSize = 5;
-	var emppageBlockSize = 10;
+	var stuSearch;
+	var employclassList;
+	var studentdetailcontent;
+	var stuModify;
 	
 	/** OnLoad event */ 
 	$(function() {
 		
+		/* Vue 등록 */
+		init();
+		
+		/* 초기화면 목록 */
+		employclasssearchlist();
 		
 		// 버튼 이벤트 등록
 		fRegisterButtonClickEvent();
+		
 	});
+	
+	/* new Vue 모음 */
+	function init(){
+		
+		/* 학생아이디 검색 */
+		stuSearch = new Vue({
+			
+								el : "#empstuSearch",
+								data : {
+									
+									empstuSearch : ""
+									
+								},
+			
+		});
+		
+		/* 학생 정보 등록 */
+		employclassList = new Vue({
+			
+								el : "#employclassList",
+								data : {
+									
+									listitem : [],
+									totalcnt : 0,
+									currentpage : 0,
+									pagesize : 5,
+									blocksize : 10,
+									pagenavi : "",
+									
+								},
+								methods : {
+									
+									selectstudent : function(loginID, name){
+										
+										console.log(loginID, name);
+										
+										selectstudent(loginID, name);
+										
+									}
+									
+								},
+			
+		});
+		
+		/* 하단 목록 */
+		studentdetailcontent = new Vue({
+			
+									el : "#studentdetailcontent",
+									data :{
+										
+										listitem : [],
+										totalcnt : 0,
+										delshow : false
+										
+									},
+									methods : {
+										
+										modifystudent : function(employ_no, loginID){
+											
+											console.log(employ_no, loginID);
+											
+											modifystudent(employ_no, loginID);
+											
+										},
+										
+									},
+			
+		});
+		
+		/* 하단 수정버튼 모달창 */
+		stuModify = new Vue({
+			
+								el : "#stuModify",
+								data : {
+									
+									upemp_no : "",
+									upstdempname : "",
+									upstdloginID : "",
+									emp_update_join : "",
+									emp_update_leave : "",
+									emp_update_state : "",
+									emp_update_name : "",
+									action : "",
+									delshow : false
+									
+								}
+			
+		});
+		
+	}
 	
 
 	/** 버튼 이벤트 등록 */
@@ -36,24 +133,18 @@
 			var btnId = $(this).attr('id');
 
 			switch (btnId) {
-				//학생 신규등록 버튼
-				case 'empnewpopup':
-					$("#action").val("I");
-					empnewpopup(stdID, stdname);
-					break;
-				//수정 >  수정완료 버튼
+				//등록 버튼
 				case 'btnSaveempstudent':
-					$("#action").val("I");
-					fn_insertempstudent();
-					break;
-				//수정완료 버튼
-				case 'btnUpdateempstudent' :
-					$("#action").val("U");
-					fn_btnempupdate();
+					fn_saveempstudent();
 					break;
 				//검색 버튼
 				case 'btnempstuSearch':
 					employclasssearchlist();
+					break;
+				//삭제버튼
+				case 'btnDeleteempstudent':
+					stuModify.action ="D";
+					fn_saveempstudent();
 					break;
 				//닫기 버튼
 				case 'btnCloseGrpCod' :
@@ -61,6 +152,258 @@
 					break;
 			}
 		});
+	}
+	
+	//취업정보등록(상단) list 보여주는 부분
+	function employclasssearchlist(pagenum){
+		
+		pagenum = pagenum || 1;
+		
+		var param = {
+				
+				pagenum : pagenum,
+				pageSize : employclassList.pagesize,
+				empstuSearch : stuSearch.empstuSearch
+				
+		}
+		
+		var listcallback = function(employclasslistdata){
+			
+			/* 현재 페이지 값 */
+			employclassList.currentpage = pagenum;
+			
+			console.log("상단 리스트" + JSON.stringify(employclasslistdata));
+			
+			/* 목록, 전체 페이지 수 */
+			employclassList.listitem = employclasslistdata.empclasslist;
+			employclassList.totalcnt = employclasslistdata.totalcnt;
+			
+			//하단 페이지처리
+			var paginationHtml = getPaginationHtml(pagenum, employclassList.totalcnt, employclassList.pagesize, employclassList.blocksize, 'employclasssearchlist');
+			
+			/* 페이지 네비 */
+			employclassList.pagenavi = paginationHtml;
+			
+		}
+		
+		callAjax("/adm/vueempclasslist.do", "post" , "json", "false", param, listcallback);
+	}
+	
+	/* 상단 목록에서 확인 버튼 눌렀을 때 */
+	function selectstudent(stdID, name){
+		
+		studentdetailcontent.loginID = stdID;
+		studentdetailcontent.name = name;
+		
+		studentdetailcontent.delshow = true;
+		
+		empdetailsearch();
+		
+	}
+	
+	//하단 디테일 내용 보이는 곳.
+	function empdetailsearch(){
+		
+		var param = {
+				
+				stdID : studentdetailcontent.loginID,
+				stdname : studentdetailcontent.name
+				
+		}
+		
+		var listcallback= function(emplistdata){
+			
+			console.log("하단 디테일 내용" + JSON.stringify(emplistdata));
+			
+			studentdetailcontent.listitem = emplistdata.employdetaillist;
+			studentdetailcontent.totalcnt = emplistdata.totalcnt;
+			
+		}
+		
+		callAjax("/adm/vuedetailcontent.do", "post" , "json", "false", param, listcallback);
+		
+	}
+	
+	/* 하단 비고 수정버튼 눌렀을 때 모달창 */
+	function modifystudent(employ_no, loginID){
+		
+		stuModify.upemp_no = employ_no;
+		stuModify.upstdloginID = loginID;
+		
+		console.log("하단 비고 수정버튼" + stuModify.upemp_no, stuModify.upstdloginID);
+		
+		var param = {
+				
+				employ_no : employ_no,
+				stdID : loginID
+				
+		};
+		
+		console.log(param);
+		
+		var listcallback = function(selectedreslt) {
+			
+			console.log("수정 삭제 모달창 : " + JSON.stringify(selectedreslt));
+			
+			// 수정 삭제 모달
+			fn_modalpage(selectedreslt.empInfo);
+			
+			//모달 팝업
+			gfModalPop("#stuModify");
+			
+		};
+		
+		callAjax("/adm/vuesdetailcontent.do", "post" , "json", "false", param, listcallback);
+		
+	}
+	
+	/* 모달창 수정 / 신규 폼 */
+	function fn_modalpage(object){
+		
+		if(object == "" || object == null || object == undefined){
+			
+			stuModify.upemp_no = "";
+			stuModify.upstdempname = studentdetailcontent.name;
+			stuModify.upstdloginID = studentdetailcontent.loginID;
+			stuModify.emp_update_name = "";
+			stuModify.emp_update_state = "";
+			stuModify.emp_update_join = "";
+			stuModify.emp_update_state = "";
+			stuModify.emp_update_leave = "";
+
+			
+			stuModify.action = "I";
+			
+			stuModify.delshow = false;
+			
+		} else {
+			
+			stuModify.upemp_no = object.employ_no;
+			stuModify.upstdempname = object.name;
+			stuModify.upstdloginID = object.loginID;
+			stuModify.emp_update_name = object.employ_name;
+			stuModify.emp_update_state = object.employ_state;
+			stuModify.emp_update_join = object.employ_join;
+			stuModify.emp_update_leave = object.employ_leave;
+			
+			stuModify.action = "U";
+			
+			stuModify.delshow = true;
+			
+		}
+	}
+	
+	/* 신규 등록 버튼 */
+	function empnewpopup(){
+		
+		fn_modalpage();
+		
+		//모달 팝업
+		gfModalPop("#stuModify");
+	}
+	
+	/* 신규 등록 입력 */
+	function fn_saveempstudent(){
+		
+		if(!fn_Validateitem()) {
+			   return;
+		}
+		
+		if(stuModify.action == "I" || stuModify.action == "U"){
+			
+			if (stuModify.emp_update_state == "N" && stuModify.emp_update_leave == "") {
+				
+				alert("퇴사일을 지정해 주세요.");
+				
+				return;
+				
+			}
+		}
+		
+		if(stuModify.action == "I" || stuModify.action == "U"){
+			
+			if (stuModify.emp_update_state == ""){
+				
+				alert("재직 상태를 체크해 주세요.");
+				
+				return;
+				
+			}
+		}
+		
+		if(stuModify.action == "I" || stuModify.action == "U"){
+			
+			if (stuModify.emp_update_join == ""){
+				
+				alert("입사일을 지정해 주세요.");
+				
+				return;
+				
+			}
+		}
+		
+		if(stuModify.action == "I" || stuModify.action == "U"){
+			
+			if (stuModify.emp_update_state == "Y" && stuModify.emp_update_leave == ""){
+				
+				stuModify.emp_update_leave = "재직중";
+				
+			}
+		}
+		
+		if(stuModify.action == "I" || stuModify.action == "U"){
+			
+			if (stuModify.emp_update_join > stuModify.emp_update_leave){
+				
+				alert("퇴사일을 확인해주세요.");
+				
+				return;
+				
+			}
+		}
+		
+		var param = {
+				
+				emp_no : stuModify.upemp_no,
+	     	    stdID : stuModify.upstdloginID,
+	     	    emp_name : stuModify.emp_update_name,
+	     	    emp_state : stuModify.emp_update_state,
+	     	    emp_join : stuModify.emp_update_join,
+	     		emp_leave : stuModify.emp_update_leave,
+	     		action : stuModify.action
+				
+		}
+		
+		console.log("신규등록 입력값 : " + JSON.stringify(param));
+		
+		var resultCallback = function(data) {
+			
+			// 모달 닫기
+			gfCloseModal();
+			
+			// 목록 새로고침
+			empdetailsearch();
+			
+		};
+		
+		callAjax("/adm/empsave.do", "post", "json", true, param, resultCallback);
+		
+	}
+	
+	function fn_Validateitem() {
+		var chk = checkNotEmpty(
+				[
+						["emp_update_name", "업체명을 적어주세요." ]
+					,	["emp_update_state", "재직여부를 선택하세요." ]
+					, 	["emp_join", "입사일을 정해주세요."]
+				]
+		);
+
+		if (!chk) {
+			return false;
+		}
+
+		return true;
 	}
 	
 	
@@ -102,11 +445,12 @@
 						
 					<p class="conTitle">
 							<span>취업 정보 등록</span> <span class="fr"> 
-		     	                <input type="text" style="width: 300px; height: 25px;" id="empstuSearch" name="empstuSearch" placeholder="학생 아이디로 검색">                    
+		     	                <input type="text" style="width: 300px; height: 25px;" id="empstuSearch" name="empstuSearch" v-model="empstuSearch" placeholder="학생 아이디로 검색">                    
 			                    <a href="" class="btnType blue" id="btnempstuSearch" name="btn"><span>검  색</span></a>
 							</span>
 					</p>
-					<div class="employclassList">
+					
+					<div id="employclassList">
 							
 							<table class="col">
 								<caption>caption</caption>
@@ -127,21 +471,41 @@
 										<th scope="col">확인</th>
 									</tr>
 								</thead>
-								<tbody id="detailstuclasslist"></tbody>
+								
+								<template v-if="totalcnt == 0">
+									<tbody>
+										<tr>
+											<td colspan=5>조회된 데이터가 없습니다.</td>
+										</tr>
+									</tbody>
+								</template>
+								
+								<template v-else>
+									<tbody v-for="(item, index) in listitem">
+										<tr>
+											<td>{{ item.name }}</td>
+											<td>{{ item.user_hp }}</td>
+											<td>{{ item.loginID }}</td>
+											<td>{{ item.user_regdate }}</td>
+											<td><a href="" @click.prevent="selectstudent(item.loginID, item.name)">[확인]</a></td>
+										</tr>
+									</tbody>
+								</template>
+								
 							</table>
+							
+							<div class="paging_area"  id="detailstudentclassPagination" v-html="pagenavi"> </div>
 						</div>
-	
-						<div class="paging_area"  id="detailstudentclassPagination"> </div>
 						
 						<br><br><br><br>
 						
-						<div id="studentdetailcontent">
-						<p>
-						<div id="detail_btn">
-							<span class="fr">
-		     	                <a href="javascript:empnewpopup()" class="btnType blue" id="emp_updqte_data" name="modal"><span>신규등록</span></a>
+						<div id="studentdetailcontent" v-show="delshow">
+						
+						<p class="conTitle">
+							<span>학생 취업 정보</span> 
+							<span class="fr"> 
+								<a href="javascript:empnewpopup()" class="btnType blue" id="emp_updqte_data" name="modal"><span>신규등록</span></a>
 							</span>
-						</div>
 						</p>
 							
 							<table class="col">
@@ -151,16 +515,16 @@
 									<col width="15%">
 									<col width="15%">
 									<col width="15%">
-									<col width="15%">
-									<col width="15%">
-									<col width="15%">
-									<col width="5%">
+									<col width="10%">
+									<col width="16%">
+									<col width="16%">
+									<col width="8%">
 								</colgroup>
 	
 								<thead>
 									<tr>
 										<th scope="col">학번</th>
-										<th scope="col">아이디(정보수정)</th>
+										<th scope="col">아이디</th>
 										<th scope="col">학생명</th>
 										<th scope="col">업체명</th>
 										<th scope="col">재직여부(N/Y)</th>
@@ -169,7 +533,30 @@
 										<th scope="col">비고</th>
 									</tr>
 								</thead>
-								<tbody id="detailempcontent"></tbody>
+								
+								<template v-if="totalcnt == 0">
+									<tbody>
+										<tr>
+											<td colspan=8>조회된 데이터가 없습니다.</td>
+										</tr>
+									</tbody>
+								</template>
+								
+								<template v-else>
+									<tbody v-for="(item, index) in listitem">
+										<tr>
+											<td>{{ item.employ_no }}</td>
+											<td>{{ item.loginID }}</td>
+											<td>{{ item.name }}</td>
+											<td>{{ item.employ_name }}</td>
+											<td>{{ item.employ_state }}</td>
+											<td>{{ item.employ_join }}</td>
+											<td>{{ item.employ_leave }}</td>
+											<td><a href="" @click.prevent="modifystudent(item.employ_no, item.loginID)">[상세보기]</a></td>
+										</tr>
+									</tbody>
+								</template>
+								
 							</table>
 						</div>
 					</div> <!--// content -->
@@ -182,7 +569,7 @@
 	</div>
 
 	<!-- 모달팝업 -->
-	<div id="layer1" class="layerPop layerType2" style="width: 1000px;">
+	<div id="stuModify" class="layerPop layerType2" style="width: 1000px;">
 		<dl>
 			<dt>
 				<strong>학생정보수정</strong>
@@ -203,98 +590,43 @@
 					<tbody>
 						<tr>
 							<th scope="col">학번</th>
-							<td colspan="7"><div id="upemp_no"></div></td>
+							<td><input type="text" class="inputTxt p100" id="upemp_no" v-model="upemp_no" readonly /></td>
 						</tr>
 						<tr>
 							<th scope="col">학생명</th>
-							<td colspan="3"><div id="upstdempname"></div></td>
+							<td><input type="text" class="inputTxt p100" id="upstdempname" v-model="upstdempname" readonly /></td>
 							<th scope="col">아이디</th>
-							<td colspan="3"><div id="upstdloginID"></div></td>
+							<td><input type="text" class="inputTxt p100" id="upstdloginID" v-model="upstdloginID" readonly /></td>
 						</tr>
 						<tr>
 							<th scope="col">업체명</th>
-							<td colspan="3"><input type="text" class="inputTxt p100" id="emp_update_name" name="emp_update_name" /></td>
+							<td><input type="text" class="inputTxt p100" id="emp_update_name" name="emp_update_name" v-model="emp_update_name"/></td>
 							<th scope="col">재직여부</th>
-							<td colspan="3">
-							<input type="radio" id="radio1-1" name="emp_update_state" id="emp_update_state_1" value="Y" /> <label for="radio1-1">Y</label>
+							<td>
+							<input type="radio" id="radio1-1" name="emp_update_state" id="emp_update_state_1" v-model="emp_update_state" value="Y" /> <label for="radio1-1">Y</label>
 								&nbsp;&nbsp;&nbsp;&nbsp;
-							<input type="radio" id="radio1-2" name="emp_update_state" id="emp_update_state_2" value="N" /> <label for="radio1-2">N</label>
+							<input type="radio" id="radio1-2" name="emp_update_state" id="emp_update_state_2" v-model="emp_update_state" value="N" /> <label for="radio1-2">N</label>
 							</td>
 						</tr>
 						<tr>
 							<th scope="col">입사일</th>
-							<td colspan="3"><input type="text" class="inputTxt p100" id="emp_update_join" name="emp_update_join" /></td>
+							<td><input type="date" class="inputTxt p100" id="emp_update_join" name="emp_update_join" v-model="emp_update_join"/></td>
 							<th scope="col">퇴사일</th>
-							<td colspan="3"><input type="text" class="inputTxt p100" id="emp_update_leave" name="emp_update_leave" /></td>
+							<td><input type="date" class="inputTxt p100" id="emp_update_leave" name="emp_update_leave" v-model="emp_update_leave"/></td>
 						</tr>
 					</tbody>
 					
 				</table>
 				<div class="btn_areaC mt30">
-					<a href="" class="btnType gray" id="btnUpdateempstudent" name="btn"><span>수정 완료</span></a>
+					<a href="" class="btnType gray" id="btnSaveempstudent" name="btn"><span>등록</span></a>
+					<a href="" class="btnType gray" id="btnDeleteempstudent" name="btn" v-show="delshow"><span>삭제</span></a>
 					<a href=""	class="btnType gray"  id="btnCloseGrpCod" name="btn"><span>취소</span></a>
 				</div>
 			</dd>
 		</dl>
 		<a href="" class="closePop"><span class="hidden">닫기</span></a>
 	</div>
-	<div id="layer2" class="layerPop layerType2" style="width: 1000px;">
-		<dl>
-			<dt>
-				<strong>학생정보</strong>
-			</dt>
-			<dd class="content">
 
-				<!-- s : 여기에 내용입력 -->
-
-				<table class="row">
-					<caption>caption</caption>
-					<colgroup>
-						<col width="120px">
-						<col width="*">
-						<col width="120px">
-						<col width="*">
-					</colgroup>
-
-					<tbody>
-						<tr>
-							<th scope="col">학번</th>
-							<td colspan="7"><div id="emp_no"></div></td>
-						</tr>
-						<tr>
-							<th scope="col">학생명</th>
-							<td colspan="3"><div id="stdempname"></div></td>
-							<th scope="col">아이디</th>
-							<td colspan="3"><div id="stdloginID"></div></td>
-						</tr>
-						<tr>
-							<th scope="col">업체명</th>
-							<td colspan="3"><input type="text" class="inputTxt p100" id="emp_name" name="emp_name" /></td>
-							<th scope="col">재직여부</th>
-							<td colspan="3">
-							<input type="radio" id="radio1-1" name="emp_state" id="emp_state_1" value="Y" /> <label for="radio1-1">Y</label>
-								&nbsp;&nbsp;&nbsp;&nbsp;
-							<input type="radio" id="radio1-2" name="emp_state" id="emp_state_2" value="N" /> <label for="radio1-2">N</label>
-							</td>
-						</tr>
-						<tr>
-							<th scope="col">입사일</th>
-							<td colspan="3"><input type="text" class="inputTxt p100" id="emp_join" name="emp_join" /></td>
-							<th scope="col">퇴사일</th>
-							<td colspan="3"><input type="text" class="inputTxt p100" id="emp_leave" name="emp_leave" /></td>
-						</tr>
-					</tbody>
-					
-				</table>
-				<div class="btn_areaC mt30">
-					<a href="" class="btnType gray" id="btnSaveempstudent" name="btn"><span>등록완료</span></a>
-					<a href=""	class="btnType gray"  id="btnCloseGrpCod" name="btn"><span>취소</span></a>
-				</div>
-			</dd>
-		</dl>
-		<a href="" class="closePop"><span class="hidden">닫기</span></a>
-	</div>
-	<!--// 모달팝업 -->
 </form>
 </body>
 </html>

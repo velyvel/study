@@ -93,6 +93,35 @@ public class LectureManagementController {
 			return "adm/lectureManagement/lectureManagementList";
 		}
 		
+		//list 출력
+		@RequestMapping("vueLectureManagementList.do")
+		@ResponseBody
+		public Map<String, Object> vueLectureManagementList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+				HttpServletResponse response, HttpSession session) throws Exception {
+			
+			logger.info("+ Start " + className + ".vueLectureManagementList");
+			logger.info("   - paramMap : " + paramMap);
+			
+			Map<String, Object> resultMap = new HashMap<String, Object>();
+			
+			int pagenum =Integer.parseInt(String.valueOf(paramMap.get("pagenum")));
+			int pageSize =Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+			int startnum = (pagenum - 1) * pageSize;
+			
+			paramMap.put("startnum", startnum);
+			paramMap.put("pageSize", pageSize);
+			
+			List<LectureManagementModel> lectureListSearch = LectureManagementService.lectureListSearch(paramMap);
+			int totalcnt = LectureManagementService.lectureListCnt(paramMap);
+			
+			resultMap.put("lectureListSearch", lectureListSearch);
+			resultMap.put("totalcnt", totalcnt);
+			
+			logger.info("+ End " + className + ".vueLectureManagementList"); 
+			
+			return resultMap;
+		}
+		
 			//list 출력
 			@RequestMapping("studentManagementList.do")
 			public String studentList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
@@ -119,6 +148,35 @@ public class LectureManagementController {
 				return "adm/lectureManagement/studentList";
 			}
 
+			//list 출력
+			@RequestMapping("vueStudentManagementList.do")
+			@ResponseBody
+			public Map<String, Object> vueStudentList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+					HttpServletResponse response, HttpSession session) throws Exception {
+				
+				logger.info("+ Start " + className + ".vueStudentList");
+				logger.info("   - paramMap : " + paramMap);
+				
+				Map<String, Object> resultMap = new HashMap<String, Object>();
+				
+				int pagenum =Integer.parseInt(String.valueOf(paramMap.get("pagenum")));
+				int pageSize =Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+				int startnum = (pagenum - 1) * pageSize;
+				
+				paramMap.put("startnum", startnum);
+				paramMap.put("pageSize", pageSize);
+				
+				List<StudentModel> studentListSearch = LectureManagementService.studentList(paramMap);
+				int totalcnt = LectureManagementService.studentListCnt(paramMap);
+				
+				resultMap.put("studentListSearch", studentListSearch);
+				resultMap.put("totalcnt", totalcnt);
+				
+				logger.info("+ End " + className + ".vueStudentList");
+				
+				return resultMap;
+			}
+			
 		/**
 		 * 강의 저장
 		 */
@@ -172,6 +230,8 @@ public class LectureManagementController {
 			Map<String, Object> returnmap = new HashMap<String, Object>();
 			
 			LectureManagementModel lectureInfo = LectureManagementService.lectureSelect(paramMap);
+			
+//			paramMap.put("loginId",session.getAttribute("loginId"));
 
 			returnmap.put("lectureInfo", lectureInfo);
 

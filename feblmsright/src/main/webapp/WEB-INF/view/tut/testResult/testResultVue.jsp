@@ -23,13 +23,18 @@
 	var pageSizetestResultStudent = 5;
 	var pageBlockSizetestResultStudent = 10;
 	
+	var testResult;
+	
 	
 	/** OnLoad event */ 
 	$(function() {
-		comcombo("lecture_no", "lectureName", "all", "");
 		
 		// 버튼 이벤트 등록
 		fRegisterButtonClickEvent();
+		
+		init();
+		testResultLectureList();
+		
 	});
 	
 
@@ -46,6 +51,80 @@
 					break;
 			}
 		});
+	}
+	
+	function init(){
+		
+		searchArea =new Vue({
+								el : "#searchArea",
+								data : {
+									lectureName : "",
+								}
+		});
+		
+		testResult = new Vue ({
+								el : "#testResultList",
+								data : {
+									item : [],
+									totalCnt : 0,
+									cPage : 0,
+									pageNav : "",
+									lectureNo : 0,
+								},
+								/* mathods : {
+									fn_testStudentLists : function(lectureNo){
+										testResult.lectureNo=lectureNo;
+										alert("testResult.lectureNo"); 
+									}
+								}, */
+							
+		});
+		
+		divtestResult = new Vue ({
+									el : ""
+			
+		});
+		
+	
+		comcombo("lecture_no", "lectureName", "all", ""); 
+	}
+	
+	
+	function testResultLectureList(pagenum){ 
+		
+		pagenum = pagenum || 1;
+		
+		var param = {
+					pagenum : pagenum,
+					pageSize : pageSizetestResultLecture,
+					lectureNameSearch : searchArea.lectureName,
+		}
+		
+		var listcallback = function(returndata) {
+			console.log("returndata : " + JSON.stringify(returndata));
+			testResult.item=returndata.testResultLectureList;
+			testResult.totalCnt=returndata.totalcnt;
+			testResult.cPage=pagenum;
+			
+			var paginationHtml = getPaginationHtml(pagenum, returndata.totalcnt, pageSizetestResultLecture, pageBlockSizetestResultLecture, 'testResultLectureList');
+			
+			testResult.pageNav=paginationHtml;
+			
+		}
+		callAjax("/tut/vueTestResultLectureList.do", "post", "json", "false", param, listcallback);
+	}
+	
+	function fn_testStudentList(lectureNo){
+		
+		testResult.lectureNo=lectureNo;
+		alert("testResult.lectureNo : "+testResult.lectureNo); 
+	//	fn_testStudentSelectList();
+		
+	}
+	
+	function fn_testStudentSelectList(pagenum){
+		
+		
 	}
 	
 	
@@ -84,16 +163,16 @@
 								<a href="../adm/testResult.do" class="btn_set refresh">새로고침</a>
 						</p>
 
-						<p class="conTitle">
+						<p class="conTitle" id="searchArea">
 							<span>시험 결과</span> <span class="fr">
 							    
 								강의명
-		     	                <select name="lectureName" id="lectureName" style="width: 150px;"></select>                   
+		     	                <select name="lectureName" id="lectureName" style="width: 150px;" v-model="lectureName"></select>                   
 			                    <a href="" class="btnType blue" id="btnLectureSearch" name="btn"><span>검  색</span></a>
 							</span>
 						</p>
 						
-						<div class="divtestResultLecture">
+						<div class="divtestResultLecture" id="testResultList">
 							
 							<table class="col">
 								<caption>caption</caption>
@@ -118,10 +197,29 @@
 										<th scope="col">미응시인원</th>
 									</tr>
 								</thead>
-								<tbody id="listtestResultLecture"></tbody>
+								<template v-if="totalCnt == 0">
+									<tbody>
+										<tr>
+											<td colspan="5">데이터가 존재하지 않습니다.</td>
+										</tr>
+									</tbody>
+								</template>
+								<template v-else>
+									<tbody v-for="(item,index) in item">
+										<tr>
+											<td>{{item.lecture_seq}}</td>
+											<td><a href="" @click.prevent="fn_testStudentList(item.lecture_seq)">{{item.lecture_name}}</td>
+											<td>{{item.name}}</td>
+											<td>{{item.test_no}}</td>
+											<td>{{item.lecture_person}}</td>
+											<td>{{item.AFT}}</td>
+											<td>{{item.BEF}}</td>
+										</tr>
+									</tbody>
+								</template>
 							</table>
 	
-						<div class="paging_area"  id="testResultLecturePagination"> </div>
+						<div class="paging_area"  id="testResultLecturePagination" v-html="pageNav"> </div>
 						</div>
 						
 						<br/>

@@ -40,6 +40,8 @@ public class TutSurveyController {
 	@RequestMapping("survey.do")
 	public String survey(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
 			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		request.setAttribute("loginID", session.getAttribute("loginId"));
 
 		logger.info("+ Start " + className + ".survey");
 		logger.info("   - paramMap : " + paramMap);
@@ -55,6 +57,8 @@ public class TutSurveyController {
 	@RequestMapping("surveyVue.do")
 	public String surveyVue(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
 			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		request.setAttribute("loginID", session.getAttribute("loginId"));
 
 		logger.info("+ Start " + className + ".surveyVue");
 		logger.info("   - paramMap : " + paramMap);
@@ -72,6 +76,8 @@ public class TutSurveyController {
 
 		logger.info("+ Start " + className + ".surveyResult");
 		logger.info("   - paramMap : " + paramMap);
+		
+		paramMap.put("loginID", session.getAttribute("loginId"));
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		
@@ -83,6 +89,57 @@ public class TutSurveyController {
 
 		logger.info("+ End " + className + ".surveyResult");
 
+		return returnMap;
+	}
+	
+	// 설문조사 강의 목록 조회
+	@RequestMapping("vuesurveyLectureList.do")
+	@ResponseBody
+	public Map<String, Object> vuesurveyLectureList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".vuesurveyLectureList");
+		logger.info("   - paramMap : " + paramMap);
+		
+		paramMap.put("loginID", session.getAttribute("loginId"));
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		int pagenum = Integer.parseInt(String.valueOf(paramMap.get("pagenum")));
+		int pageSize = Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startPage = (pagenum - 1) * pageSize;
+		
+		paramMap.put("pageSize", pageSize);
+		paramMap.put("startPage", startPage);
+		
+		List<TutSurveyModel> vuesurveyLectureList = tutSurveyService.vuesurveyLectureList(paramMap);
+		int totalCnt = tutSurveyService.surveyLectureListCnt(paramMap);
+		
+		returnmap.put("vuesurveyLectureList", vuesurveyLectureList);
+		returnmap.put("totalCnt", totalCnt);
+		
+		logger.info("+ End " + className + ".vuesurveyLectureList");
+		
+		return returnmap;
+	}
+	
+	// 설문조사 결과 조회
+	@RequestMapping("vuesurveyResult.do")
+	@ResponseBody
+	public Map<String, Object> vuesurveyResult(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".vuesurveyResult");
+		logger.info("   - paramMap : " + paramMap);
+		
+		Map<String, Object> returnMap = new HashMap<String, Object>();
+		
+		TutSurveyModel vuesurveyResult = tutSurveyService.vuesurveyResult(paramMap);
+		
+		returnMap.put("vuesurveyResult", vuesurveyResult);
+		
+		logger.info("+ End " + className + ".vuesurveyResult");
+		
 		return returnMap;
 	}
 

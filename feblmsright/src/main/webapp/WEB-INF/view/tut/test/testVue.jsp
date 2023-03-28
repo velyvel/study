@@ -15,9 +15,16 @@
 
 <script type="text/javascript">
 
+	//변수 선언
+	var tsearcharea;
+	var tlistarea;
+	var exlist;
+	var extList;
+    var layer1;
+    var layer2;
 	// 시험 페이징 설정
-	var pageSizeTest = 5;
-	var pageBlockSizeTest = 5;
+	//var pageSizeTest = 5;
+	//var pageBlockSizeTest = 5;
 	
 	/* // 문제 페이징 설정
 	var pageSizeQuestion = 5;
@@ -26,12 +33,113 @@
 	
 	/** OnLoad event */ 
 	$(function() {
-		selectComCombo("test", "testSearch", "all", "");
+		
+		
+		init();
+		
+		searchTest();
 		
 		// 버튼 이벤트 등록
 		fRegisterButtonClickEvent();
 		
 	});
+	
+	function init() {
+		
+		tsearcharea = new Vue({
+			el : "#tsearcharea",
+			data : {
+				testSearch : "",
+				tflag : true,
+			}
+		});
+		
+		tlistarea = new Vue({
+			el : "#tlistarea",
+            data : {
+            	       listitem : [],
+            	       totalcnt : 0,
+            	       cpage :0,      //현재 조회하고있는 page
+            	       pagesize : 5,
+            	       blocksize : 10,//pagenavigation 번호 몇까지 나오는지
+            	       pagenavi : "", // vhtml 연결할 놈이어서 str로
+            	       tflag : true,
+            } , methods : {
+            	questionListSearch : function(test_no) {
+            		questionListSearch(test_no);
+               	 },
+               	fn_selectTest : function(test_no){
+					fn_selectTest(test_no);
+				}
+            }
+		});
+		
+		exList = new Vue ({
+			el : "#exList",
+			data : {
+					listitem : [],
+	     	        totalcnt : 0,
+	     	        cpage :0,      //현재 조회하고있는 page
+	     	        pagesize : 5,
+	     	        blocksize : 10,//pagenavigation 번호 몇까지 나오는지
+	     	        pagenavi : "", // vhtml 연결할 놈이어서 str로
+	     	        testno : 0,
+	     	        exflag : false,
+
+			},
+			methods : {
+				fn_selectQuestion : function(test_no,question_no){
+					fn_selectQuestion(test_no,question_no);
+				}
+				
+			}
+			
+		});
+		
+		extList = new Vue ({
+			el : "#extList",
+			data : {
+				exflag : false,
+			},
+			
+		});
+		
+		layer1 = new Vue({
+			el : "#layer1",
+			data : {
+				test_no : 0,
+				test_title : "",
+				action : "",
+				loginID : $("#loginID").val(),
+				lecture_seq : $("#lecture_seq").val(),
+			},
+			
+		});
+		
+		layer2 = new Vue({
+			el : "#layer2",
+			data : {
+				qtest_no : 0,
+				question_no : 0,
+				question_answer : 0,
+				question_score : 0,
+				question_ex : "",
+				question_one : "",
+				question_two : "",
+				question_three : "",
+				question_four : "",
+				action : "",
+				bkpagenum : $("#bkpagenum").val(),
+				//qtest_no : 0,
+				
+			},
+			
+		});
+		
+		selectComCombo("test", "testSearch", "all", "");
+		
+		
+	} //init
 	
 
 	/** 버튼 이벤트 등록 */
@@ -49,7 +157,7 @@
 				fSaveTest();
 				break;
 			case 'btnDeleteTest':
-				$("#action").val("D");
+				layer1.action="D";
 				fSaveTest();
 				alert("삭제되었습니다.");
 				console.log("삭제");
@@ -59,7 +167,7 @@
 				alert("저장되었습니다.");
 				break;
 			case 'btnDeleteQuestion':
-				$("#qaction").val("D");
+				layer2.action="D";
 				fSaveQuestion();
 				alert("삭제되었습니다.");
 				break;
@@ -73,6 +181,307 @@
 			}
 		});
 	}
+	
+	/* 시험목록 조회 */
+	function searchTest(pagenum) {
+		
+		pagenum = pagenum || 1;
+		
+		var param = {
+			pagenum : pagenum,
+			pageSize : tlistarea.pagesize,
+			testSearch : tsearcharea.testSearch
+
+		};
+
+		var listcallback = function(treturndata) {
+			console.log("treturndata : " + JSON.stringify(treturndata));
+			
+			tlistarea.listitem = treturndata.testList;
+			tlistarea.totalcnt = treturndata.totalcnt;
+			
+			var paginationHtml = getPaginationHtml(pagenum, tlistarea.totalcnt, tlistarea.pagesize, tlistarea.blocksize, 'searchTest');
+			
+			tlistarea.pagenavi = paginationHtml;
+			
+		};
+
+		callAjax("/tut/vuetestList.do", "post", "json", "true", param,
+				listcallback);
+		
+	};
+	
+	function questionListSearch(testno) {
+		
+		//tsearcharea.tflag = false;
+		//tlistarea.tflag = false;
+		
+		exList.testno = testno; // brest_no...?
+		
+		questionSearch();
+	}
+	
+	/* 시험이름 클릭시 시험문제 관리 page */
+	function questionSearch() {
+		extList.exflag = true;
+		exList.exflag = true;
+		
+		var param = {
+			test_no : exList.testno
+		};
+		
+		console.log(param);
+
+		var listcallback = function(treturndata) {
+			console.log("treturndata : " + JSON.stringify(treturndata));
+
+			exList.listitem = treturndata.questionList
+			exList.totalcnt = treturndata.qtotalcnt
+			
+			//$("#tbodyQuestionList").empty().append(treturndata);
+
+			//var qtotalcnt = $("#qtotalcnt").val();
+
+			/* var paginationHtml = getPaginationHtml(pagenum, qtotalcnt,
+					pageSizeQuestion, pageBlockSizeQuestion, 'questionSearch');
+			console.log("paginationHtml : " + paginationHtml);
+			//swal(paginationHtml);
+			$("#itemListPagination").empty().append(paginationHtml);
+
+			$("#bkpagenum").val(pagenum); */
+
+		};
+
+		callAjax("/tut/vuequestionList.do", "post", "json", "true", param,
+				listcallback);
+
+	}
+	
+	/* 시험관리 신규등록 모달  */
+	function fn_testRegPopup(test_no) {
+			// 폼 초기화
+			fn_initForm();
+
+			// 모달 팝업
+			gfModalPop("#layer1");
+
+			console.log(layer1.action);
+			//fn_selectTest(test_no);
+	}
+	
+	/* 시험관리 디테일 */
+	function fn_selectTest(test_no) {
+		
+		layer1.test_no = test_no;
+		
+		param = {
+			test_no : test_no
+		};
+
+		var selectcallback = function(selectresult) {
+			console.log("selectcallback : " + JSON.stringify(selectresult));
+
+			fn_initForm(selectresult.testInfo);
+
+			// 모달 팝업
+			gfModalPop("#layer1");
+			selectComCombo("lecseqbyuser", "lecseqbyuserall", "all", "");  
+			 
+			
+		}
+
+		callAjax("/tut/testDetail.do", "post", "json", "true", param,
+				selectcallback);
+		
+	};
+	
+	/* 시험관리 폼 초기화  */
+	function fn_initForm(object) {
+
+		if (object == "" || object == null || object == undefined) {
+			layer1.action="I";
+
+			layer1.test_no = ""; // << test 숫자 입력창 초기값을 0으로 할당?
+			layer1.test_title = "";
+			
+			//console.log("insert : Y ");
+			//$("#test_no").val("");
+			//$("#test_title").val("");
+			//$("#btnDeleteRoom").hide();
+
+		} else {
+			layer1.action="U";
+			
+			
+			layer1.test_no = object.test_no;
+			layer1.test_title = object.test_title;
+
+			//$("#test_no").val(selectTest.test_no);
+			//$("#test_title").val(selectTest.test_title);
+			//$("#btnDeleteRoom").show();
+			
+		}
+	}
+	
+	/* 모달에서 저장 함수 */
+	function fSaveTest() {
+
+		console.log("저장");
+		console.log(layer1.action);
+
+		var param = {
+			action : layer1.action,
+			test_no : layer1.test_no,
+			loginID : layer1.loginID,
+			lecture_seq : layer1.lecture_seq,
+			test_title : layer1.test_title
+			
+		};
+
+		console.log("fSaveTest 의 매개변수 : "+JSON.stringify(param));
+
+		var saveTestSave = function(savereturn) {
+			console.log("saveTestSave: ", + JSON.stringify(savereturn));
+
+			alert("저장되었습니다.");
+			gfCloseModal();
+
+			searchTest();
+			
+		}
+
+		callAjax("/tut/testSave.do", "post", "json", "true", param,
+				saveTestSave);
+
+	};
+	
+	/* 시험문제(question) 모달 */
+	function fn_questionPopup(test_no,question_no) {
+
+		//if (test_no == "" || test_no == null || test_no == undefined) {
+
+			//var btest_no = exList.testno;
+			
+			//console.log(btest_no);
+			
+			//if (btest_no == "" || btest_no == null || btest_no == undefined) {
+			//	alert("시험을 먼저 선택해 주세요.");
+			//	return;
+			//}
+
+			//layer2.action="I";
+
+			fn_initQuestionForm();
+
+			// 모달 팝업
+			gfModalPop("#layer2");
+		//} else {
+		//	layer2.action="U";
+
+		//	fn_selectQuestion(test_no,question_no);
+		//}
+
+	}
+	
+	/* 시험문제(question) 폼 초기화 */
+	function fn_initQuestionForm(object) {
+		
+		test_no = exList.testno;
+		//$("#qtest_no").val($("#btest_no").val());
+		//console.log(test_no);
+
+		if (object == "" || object == null || object == undefined) {
+			
+			layer2.action = "I";
+			
+			layer2.question_no = ""; 
+			layer2.question_ex = "";
+			layer2.question_answer = "";
+			layer2.question_one = "";
+			layer2.question_two = "";
+			layer2.question_three = "";
+			layer2.question_four = "";
+			layer2.question_score = "";
+			
+		    
+			
+			//$("#btnDeleteQuestion").hide();
+		} else {
+			
+			layer2.action = "U";
+
+			layer2.question_no = object.question_no;
+			layer2.question_ex = object.question_ex;
+			layer2.question_answer = object.question_answer;
+			layer2.question_one = object.question_one;
+			layer2.question_two = object.question_two;
+			layer2.question_three = object.question_three;
+			layer2.question_four = object.question_four;
+			layer2.question_score = object.question_score;
+			
+			
+			
+			//$("#btnDeleteQuestion").show();
+		}
+	}
+	
+	/* 시험문제(question) 디테일 */
+	function fn_selectQuestion(test_no,question_no) {
+		
+		var param = {
+			test_no : test_no,
+			question_no : question_no
+		};
+
+		var selectcallback = function(selectresult) {
+			console.log("selectcallback : " + JSON.stringify(selectresult));
+
+			fn_initQuestionForm(selectresult.questionInfo);
+
+			// 모달 팝업
+			gfModalPop("#layer2");
+
+		}
+
+		callAjax("/tut/questionDetail.do", "post", "json", "true", param,
+				selectcallback);
+	}
+	
+	/* question 모달 저장 */
+	function fSaveQuestion() {
+
+		console.log("저장");
+		console.log(layer2.action);
+
+		var param = {
+			test_no: test_no,
+			question_no: layer2.question_no,
+			
+			question_ex : layer2.question_ex,
+			question_answer : layer2.question_answer,
+			question_one : layer2.question_one,
+			question_two : layer2.question_two,
+			question_three : layer2.question_three,
+			question_four : layer2.question_four,
+			question_score : layer2.question_score,
+			qaction : layer2.action
+		};
+		
+		console.log("fSaveQuestion 의 매개변수 : "+JSON.stringify(param));
+
+		var savecallback = function(selectresult) {
+			console.log("selectcallback : " + JSON.stringify(selectresult));
+			
+			gfCloseModal();
+			
+			questionListSearch(test_no);
+			questionSearch(bkpagenum);
+		};
+
+		callAjax("/tut/questionSave.do", "post", "json", "true", param,
+				savecallback);
+		
+	};
 	
 
 </script>
@@ -116,10 +525,10 @@
 						
 						
 						<!-- div test는 시험명을 클릭했을때 사라지고,,, div question(문제목록)이 떠야한다  -->
-						<div id="test">
-						<p class="conTitle">
+						<div>
+						<p class="conTitle" id="tsearcharea" v-show="tflag">
 							<span>시험 관리</span> <span class="fr"> 
-							   <select id="testSearch" name="testSearch" style="width: 150px;" onchange="javascript:searchTest();">
+							   <select id="testSearch" name="testSearch" v-model="testSearch" style="width: 150px;" onchange="javascript:searchTest();">
 							    </select> 
 							            
 			                    <!-- <a href="" class="btnType blue" id="btnSearch" name="btn"><span>검  색</span></a> -->
@@ -127,7 +536,7 @@
 							</span>
 						</p>
 						
-						<div class="tbodyTestList">
+						<div id="tlistarea" v-show="tflag">
 							
 							<table class="col">
 								<caption>caption</caption>
@@ -151,17 +560,40 @@
 										<th scope="col">시험종료일</th> -->
 									</tr>
 								</thead>
-								<tbody id="tbodyTestList"></tbody>
+								
+								<template v-if="totalcnt == 0">
+									<tbody>
+										<tr>
+											<td colspan=3> 조회된 데이터가 없습니다. </td>
+										</tr>
+									</tbody>
+								</template>
+								
+								<template v-else>
+									<tbody v-for = "(item, index) in listitem">
+										<tr >
+											<td>{{ item.test_no }}</td>
+											<td>
+												<a href="" @click.prevent="questionListSearch(item.test_no)">{{ item.test_title }}</a>
+											</td>
+											<td>
+												<a href="" class="btnType3 color1" @click.prevent="fn_selectTest(item.test_no)">
+												<span>수정</span>
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</template>
 							</table>
+						<div class="paging_area"  id="testListPagination" v-html="pagenavi"> </div>
 						</div>
 	
-						<div class="paging_area"  id="testListPagination"> </div>
 						</div><!-- div test 의 끝 -->
 						<br>
 						<br>
 						<!-- div question(문제목록) -->
 						<div id="question">
-						<p class="conTitle">
+						<p id="extList" class="conTitle" v-show="exflag">
 							<span>시험문제 관리</span> <span class="fr"> 
 							  
 							    <a	class="btnType blue" href="javascript:fn_questionPopup();" name="modal"><span>신규등록</span></a>
@@ -169,7 +601,7 @@
 							</span>
 						</p>
 						
-						<div class="tbodyQuestionList">
+						<div id="exList" v-show="exflag">
 							
 							<table class="col">
 								<caption>caption</caption>
@@ -203,11 +635,36 @@
 									
 									</tr>
 								</thead>
-								<tbody id="tbodyQuestionList"></tbody>
+								<template v-if="totalcnt == 0">
+									<tbody>
+										<tr>
+											<td colspan=8> 조회된 데이터가 없습니다. </td>
+										</tr>
+									</tbody>
+								</template>
+								<template v-else>
+									<tbody v-for = "(item, index) in listitem">
+										<tr >
+											<td>{{ item.question_no }}</td>
+											<td>{{ item.question_ex }}</td>
+											<td>{{ item.question_answer }}</td>
+											<td>{{ item.question_one }}</td>
+											<td>{{ item.question_two }}</td>
+											<td>{{ item.question_three }}</td>
+											<td>{{ item.question_four }}</td>
+											<td>
+												<a href="" class="btnType3 color1" @click.prevent="fn_selectQuestion(item.test_no,item.question_no)">
+												<span>수정</span>
+												</a>
+											</td>
+
+										</tr>
+									</tbody>
+								</template>
 							</table>
+						<div class="paging_area"  id="questionListPagination"> </div>
 						</div>
 	
-						<div class="paging_area"  id="questionListPagination"> </div>
 						</div><!-- div question 의 끝 -->
 						
 					</div> <!--// content -->
@@ -240,9 +697,9 @@
 					<tbody>
 						<tr>
 							<th scope="row">시험번호<span class="font_red">*</span></th>
-							<td><input type="text" class="inputTxt p100" name="test_no" id="test_no" /></td>
+							<td><input type="text" class="inputTxt p100" name="test_no" id="test_no" v-model="test_no"/></td>
 							<th scope="row">시험명 <span class="font_red">*</span></th>
-							<td><input type="text" class="inputTxt p100" name="test_title" id="test_title" /></td>
+							<td><input type="text" class="inputTxt p100" name="test_title" id="test_title" v-model="test_title"/></td>
 						</tr>
 							<!-- <tr id ="CCC">
 								<th scope="row">등록된 강의<span class="font_red">*</span></th>
@@ -296,39 +753,39 @@
 
 					<tbody>
 						<tr>
-							<input type="hidden" name="qtest_no" id="qtest_no"  value=""/> <!-- 시험번호 숨기기 -->
+							<input type="hidden" name="qtest_no" id="qtest_no" v-model="qtest_no" value=""/> <!-- 시험번호 숨기기 -->
 							<th scope="row">문제번호  <!-- <span class="font_red">*</span> --></th>
-							<td><input type="text" class="inputTxt p100" id="question_no" name="question_no" /></td>
+							<td><input type="text" class="inputTxt p100" id="question_no" name="question_no" v-model="question_no"/></td>
 							<th scope="row" style="width : 40px;">정답<!-- <span class="font_red">*</span> --></th>
-							<td><input type="text" class="inputTxt p100" id="question_answer" name="question_answer" /></td>
+							<td><input type="text" class="inputTxt p100" id="question_answer" name="question_answer" v-model="question_answer"/></td>
 							<th scope="row" style="width : 40px;">점수<!-- <span class="font_red">*</span> --></th>
-							<td><input type="text"  class="inputTxt p100" id="question_score"  name="question_score" /></td>
+							<td><input type="text"  class="inputTxt p100" id="question_score"  name="question_score" v-model="question_score"/></td>
 						</tr>
 						
 						<tr>
 							<th scope="row">문제</th>
 							<td colspan="5"><input type="text" class="inputTxt p100"
-								id="question_ex" name="question_ex" /></td>
+								id="question_ex" name="question_ex" v-model="question_ex"/></td>
 						</tr>
 						<tr>
 							<th scope="row">문제1</th>
 							<td colspan="5"><input type="text" class="inputTxt p100"
-								id="question_one" name="question_one" /></td>
+								id="question_one" name="question_one" v-model="question_one"/></td>
 						</tr>
 						<tr>
 							<th scope="row">문제2</th>
 							<td colspan="5"><input type="text" class="inputTxt p100"
-								id="question_two" name="question_two" /></td>
+								id="question_two" name="question_two" v-model="question_two"/></td>
 						</tr>
 						<tr>
 							<th scope="row">문제3</th>
 							<td colspan="5"><input type="text" class="inputTxt p100"
-								id="question_three" name="question_three" /></td>
+								id="question_three" name="question_three" v-model="question_three"/></td>
 						</tr>
 						<tr>
 							<th scope="row">문제4</th>
 							<td colspan="5"><input type="text" class="inputTxt p100"
-								id="question_four" name="question_four" /></td>
+								id="question_four" name="question_four" v-model="question_four"/></td>
 						</tr>
 						
 					</tbody>

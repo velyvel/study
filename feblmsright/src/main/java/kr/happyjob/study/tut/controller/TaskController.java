@@ -293,6 +293,35 @@ public class TaskController {
     	  
       }
       
+      /**   과제 제출 명단   */
+      @RequestMapping("vueTasksendinfo.do")
+      @ResponseBody
+      public Map<String, Object> vueTasksendinfo(Model model,  @RequestParam Map<String, Object> paramMap,
+    		  HttpServletRequest request, HttpServletResponse response) throws Exception{
+    	  
+    	  logger.info("========= Start  " + className + ".vueTasksendinfo" + "=========");
+    	  logger.info("   - paramMap : " + paramMap);
+    	  
+    	  Map<String, Object> resultMap = new HashMap<String, Object>();
+    	   
+    	  int pageNum = Integer.parseInt( String.valueOf( paramMap.get("pageNum") ) ); 
+    	  int  pageSize = Integer.parseInt ( String.valueOf ( paramMap.get("pageSize") ) );
+    	  int startNum =  (pageNum - 1) * pageSize;
+    	  
+    	  paramMap.put("startNum", startNum);
+    	  paramMap.put("pageSize", pageSize);
+    	  List<TaskSendModel> tasksendinfo = taskService.tasksendinfo(paramMap);
+    	  int totalCnt = taskService.tasksnedtCnt(paramMap);
+    	  
+    	  resultMap.put("tasksendinfo", tasksendinfo);
+    	  resultMap.put("totalCnt",totalCnt);
+    	  
+    	  logger.info("========= End " + className + ".vueTasksendinfo" +  "=========");
+    	  
+    	  return resultMap;
+    	  
+      }
+      
       /** 제출과제 상세보기*/
       @RequestMapping("taskSendDetail.do")
       @ResponseBody

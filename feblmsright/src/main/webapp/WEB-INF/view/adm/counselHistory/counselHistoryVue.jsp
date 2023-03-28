@@ -23,15 +23,35 @@
 	var pageSizeComnDtlCod = 5;
 	var pageBlockSizeComnDtlCod = 10;
 	
+
+	//////////////////////////////
+	
+	var counselList;
+	
+	
+	
 	
 	/** OnLoad event */ 
 	$(function() {
 		
-		comcombo("lecture_no", "lectureNo", "all", "");
 		
+	//	comcombo("lecture_no", "lectureNo", "all", "");
 		
 		// 버튼 이벤트 등록
-		fRegisterButtonClickEvent();
+	//	fRegisterButtonClickEvent();
+	
+	
+		//console.log("selectComCombo : "+JSON.stringify(selectComCombo));  ////
+		
+		// 버튼 이벤트 등록
+		fRegisterButtonClickEvent();   ////
+		
+		//init();  /////
+		
+		lectureList();  //강의목록
+		
+		
+	
 	});
 	
 
@@ -65,8 +85,85 @@
 		});
 	}
 	
+	///////////////////////////////
+	
+	/* 강의 목록 */	
+	function lectureList(pageNum){
+		
+		//$("#counselList").hide();
+		
+		pageNum = pageNum || 1;
+		
+		var param = {
+				pageNum : pageNum,
+				pageSize : pageSize,
+				lectureNo : $("#lectureNo").val()
+		}
+		
+		var lectureListCallback = function(data){
+			console.log(" lectureList : " + data);
+			$("#tbodyLectureList").empty().append(data);
+			
+	         var totalcnt =  $("#lectureCnt").val(); 
+	         
+	         var paginationHtml = getPaginationHtml(pageNum, totalcnt, pageSize, pageBlockSize, 'lectureList');
+	         
+	         console.log(" paginationHtml : "+paginationHtml);
+	         
+	         $("#lectureListPagination").empty().append( paginationHtml );
+		}
+		
+		callAjax("/adm/lecturelist.do", "post", "text", "false", param, lectureListCallback); 
+	}
+
+	///////////////////////////////
+	
+	/* 상담 목록 */
+	function init(){
+		
+		counselList = new Vue({
+			
+			el : "#counselList",
+			data : {
+				listitem : [],
+				totalcnt : 0,
+				cpage : 0,
+				pagenavi : ""
+			}
+			
+		});
+		
+	function lectureList(pageNum){ 
+		
+		counselList.counselList = false;
 	
 	
+	/* 상담 상세 조회 */
+	
+	function fn_selectCounsel(consultantNo){
+		
+		var param = {
+				consultantNo : consultantNo
+		}
+		
+		var selectCallback = function(data){
+			console.log("selectCallback : " + JSON.stringify(data));
+			
+			var selectCounsel= data.counselInfo
+			 $("#lecture").empty().append(selectCounsel.lecture_name);	
+			 $("#consultantNo").empty().append($("#counselno").val());
+			 $("#consultantName").empty().append(selectCounsel.stu_name);	
+			 $("#consultantContent").empty().append(selectCounsel.consultant_content);	
+			 $("#consultantCounsel").empty().append(selectCounsel.consultant_counsel);	
+			 $("#consultantDate").empty().append(selectCounsel.consultant_date);	
+			
+			 gfModalPop("#counselSaveLayer");
+		}
+		 callAjax("/adm/counselSelect.do", "post" , "json", "false", param, selectCallback);
+	}
+	
+	
+	////////////////////////////////
 	
 </script>
 

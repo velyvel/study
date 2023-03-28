@@ -17,7 +17,7 @@
 .aChart {
 	width: 1000px; 
 	height: 500px;
-}
+} 
 
 .slider {
 	width: 100%;
@@ -101,15 +101,21 @@
 	var pageSizeLecture = 5;
 	var pageBlockSizeLecture = 5;
 	
+	var teacherSearch;
+	var teacherList;
+	var slider;
 	
 	/** OnLoad event */ 
 	$(function() {
 		
 		// 버튼 이벤트 등록
 		fRegisterButtonClickEvent();
+		
+		init();
+		
+		surveyTeacherList();
 	});
 	
-
 	/** 버튼 이벤트 등록 */
 	function fRegisterButtonClickEvent() {
 		$('a[name=btn]').click(function(e) {
@@ -118,28 +124,220 @@
 			var btnId = $(this).attr('id');
 
 			switch (btnId) {
-				case 'btnSearchTeacher':
+				/* case 'btnSearchTeacher':
 					surveyTeacherList();
-					break;
-				case 'btnSearchLecture':
+					break; */
+				/* case 'btnSearchLecture':
 					surveyLectureList();
-					break;
-				case 'btnCloseGrpCod' :
-				case 'btnCloseDtlCod' :
-					gfCloseModal();
-					break;
+					break; */
 			}
 		});
 	}
 	
+	function init(){
+		
+		teacherSearch = new Vue({
+			
+			el : "#teacherSearch",
+			data : {
+				search : "",
+			}
+			
+		});
+		
+		teacherList = new Vue({
+			
+			el : "#teacherList",
+			data : {
+				
+				listitem : [],
+				cpage : 0,
+				totalcnt : 0,
+				pagenavi : "",
+				
+			}
+		})
+		
+		lectureList = new Vue({
+			
+			el : "#lectureList",
+			data : {
+				divLectureList : false,
+				loginID : "",
+				lsearch : "",
+				listitem : [],
+				cpage : 0,
+				totalcnt : 0,
+				pagenavi : "",
+				lecture_seq : 0,
+			}
+			
+		});
+		
+		slider = new Vue({
+			
+			el : "#slider",
+			data : {
+				bulletsDiv : false,
+			}
+			
+		});
+		
+	}
+
+	// 설문조사 강사 목록 조회
+	function surveyTeacherList(pageNum) {
+		
+		pageNum = pageNum || 1;
+		
+		var param = {
+				pageNum : pageNum,
+				pageSize : pageSizeTeacher,
+				search : teacherSearch.search
+		}
+		
+		var teacherListCallBack = function(data) {
+			
+			console.log("teacherList : "+JSON.stringify(data));
+			
+			teacherList.cpage = pageNum;
+			teacherList.listitem = data.surveyTeacherList;
+			teacherList.totalcnt = data.totalCnt;
+			
+			var paginationHtml = getPaginationHtml(pageNum, data.totalCnt, pageSizeTeacher, pageBlockSizeTeacher, 'surveyTeacherList');
+			
+			teacherList.pagenavi = paginationHtml;
+			
+		}
+		
+		callAjax("/adm/vueSurveyTeacherList.do", "post", "json", "false", param, teacherListCallBack);
+	}
 	
+	// 강의목록 들어가기전 로그인ID 백업
+	function fn_lectureList(loginID){
+		
+		lectureList.loginID = loginID;
+		
+		surveyLectureList();
+		
+		console.log(loginID);
+		
+	}
+	
+	// 강사별 강의목록 조회
+	function surveyLectureList(pageNum){
+		
+		lectureList.divLectureList = true;
+		
+		pageNum = pageNum || 1;
+		
+		var param = {
+				
+				pageNum : pageNum,
+				pageSize : pageSizeLecture,
+				loginID : lectureList.loginID,
+				lsearch : lectureList.lsearch
+		}
+		
+		var lectureListCallBack = function(data){
+			
+			console.log("surveyLectureList : "+JSON.stringify(data));			
+			
+			lectureList.cpage = pageNum;
+			lectureList.totalcnt = data.totalCnt;
+			lectureList.listitem = data.surveyLectureList;
+			
+			var paginationHtml = getPaginationHtml(pageNum, data.totalCnt, pageSizeLecture, pageBlockSizeLecture, 'surveyLectureList');
+			
+			lectureList.pagenavi = paginationHtml;
+			
+		} 
+		callAjax("/adm/vueSurveyLectureList.do", "post", "json", "false", param, lectureListCallBack);
+	}
+	
+	// 설문조사 그래프 전 I값 넣어주기
+	function fn_Result(lecture_seq){
+		lectureList.lecture_seq = lecture_seq;
+		for(var i = 1; i <= 5; i++){
+			surveyResult(lecture_seq, i);
+		}
+	}
+	
+	// 설문조사 페이지
+	function surveyResult(lecture_seq,i){
+		
+		var param = {
+				lecture_seq : lectureList.lecture_seq,
+				serveyitem_queno : i
+		}
+		console.log(param);
+		var surveyResultCallBack = function(data){
+			console.log("surveyResult : "+JSON.stringify(data));
+			  /* $("#asd"+i).dxChart({
+			        dataSource   : data.surveyResult.answer1,
+			        palette      : "Material",
+			        title: {
+			            text     : " [ "+ i + "번 문항 ]",
+			            subtitle : data.surveyResult.serveyitem_question
+			        },
+			        commonSeriesSettings: { 
+			            type             : "bar",
+			            valueField       : "ivalue",
+			            argumentField    : "svalue",
+			            ignoreEmptyPoints: true
+			        },
+			        seriesTemplate: {
+			            nameField : "svalue"
+			        }
+			    }); */
+			drawChart(data.surveyResult, i);
+		}
+		callAjax("/adm/surveyResult.do", "post", "json", "false", param, surveyResultCallBack);
+	}
+	
+	
+	
+	
+	function drawChart(data, i) {
+		 
+	        var chartasd = google.visualization.arrayToDataTable([
+	          ['만족도', '명'],
+	          ['매우만족', data.answer1 ],
+	          ['만족', data.answer2 ],
+	          ['보통', data.answer3 ],
+	          ['불만족', data.answer4 ],
+	          ['매우불만족', data.answer5 ],
+	        ]);
+
+	        var options = {
+	          chart: {
+	            title: " [ "+ i + "번 문항 ]",
+	            subtitle: data.serveyitem_question,
+	          }
+	        };
+	        
+	       /*  var drawOption = {
+	        		width: 1000,
+	        		height : 500,
+	        }; */
+
+	        var chart = new google.charts.Bar(document.getElementById('asd' + i));
+
+	        chart.draw(chartasd, google.charts.Bar.convertOptions(options));
+	        
+	      //  slider.aChart = "width: 1000px; height: 500px;";
+	        
+	        slider.bulletsDiv = true;
+	   }
+	
+	google.charts.load('current', {'packages':['bar']});
+	google.charts.setOnLoadCallback(drawChart);  
 	
 </script>
 
 </head>
 <body>
 <form id="myForm" action=""  method="">
-	<input type="hidden" name="bloginID" id="bloginID" value="">
 	
 	<!-- 모달 배경 -->
 	<div id="mask"></div>
@@ -167,15 +365,15 @@
 								<a href="../adm/survey.do" class="btn_set refresh">새로고침</a>
 						</p>
 
-						<p class="conTitle">
+						<p class="conTitle" id="teacherSearch">
 							<span>설문 조사 관리</span> <span class="fr">
 								강 사 명 
-		     	                <input type="text" style="width: 200px; height: 25px;" id="search" name="search">                    
-			                    <a href="" class="btnType blue" id="btnSearchTeacher" name="btn"><span>검  색</span></a>
+		     	                <input type="text" style="width: 200px; height: 25px;" id="search" name="search" v-model="search">                    
+			                    <a href="" class="btnType blue" id="btnSearchTeacher" name="btn" @click.prevent="surveyTeacherList()"><span>검  색</span></a>
 							</span>
 						</p>
 						
-						<div class="divTeacherList">
+						<div class="divTeacherList" id="teacherList">
 							
 							<table class="col">
 								<caption>caption</caption>
@@ -196,22 +394,39 @@
 										<th scope="col">강사가입일</th>
 									</tr>
 								</thead>
-								<tbody id="surveyTeacherList"></tbody>
+								<template v-if="totalcnt === 0">
+									<tbody>
+										<tr>
+											<td colspan="5">데이터가 존재하지 않습니다.</td>
+										</tr>
+									</tbody>
+								</template>
+								<template v-else>
+									<tbody v-for="(item,index) in listitem">
+										<tr>
+											<td><a href="" @click.prevent="fn_lectureList(item.loginID)">{{item.loginID}}</a></td>
+											<td>{{item.name}}</a></td>
+											<td>{{item.user_hp}}</td>
+											<td>{{item.user_email}}</td>
+											<td>{{item.user_regdate}}</td>
+										</tr>
+									</tbody>
+								</template>
 							</table>
+							<div class="paging_area"  id="surveyTeacherListPagination" v-html="pagenavi"> </div>
 						</div>
 	
-						<div class="paging_area"  id="surveyTeacherListPagination"> </div>
 						
 						<br><br><br><br><br><br>
 					
 					
-					<div id="divLectureList">
+					<div id="lectureList" v-show="divLectureList">
 					
 						<p class="conTitle">
 							<span>강의목록</span> <span class="fr">
 								강 의 명
-		     	                <input type="text" style="width: 200px; height: 25px;" id="lsearch" name="lsearch">                    
-			                    <a href="" class="btnType blue" id="btnSearchLecture" name="btn"><span>검  색</span></a>
+		     	                <input type="text" style="width: 200px; height: 25px;" id="lsearch" name="lsearch" v-model="lsearch">                    
+			                    <a href="" @click.prevent="surveyLectureList()" class="btnType blue" id="btnSearchLecture" name="btn"><span>검  색</span></a>
 							</span>
 						</p>
 						
@@ -236,10 +451,27 @@
 										<th scope="col">설문인원/수강인원</th>
 									</tr>
 								</thead>
-								<tbody id="surveyLectureList"></tbody>
+								<template v-if="totalcnt === 0">
+									<tbody>
+										<tr>
+											<td colspan="5">데이터가 존재하지 않습니다.</td>
+										</tr>
+									</tbody>
+								</template>
+								<template v-else>
+									<tbody v-for="(item,index) in listitem">
+										<tr>
+											<td><a href="" @click.prevent="fn_Result(item.lecture_seq)">{{item.lecture_name}}</a></td>
+											<td>{{item.name}}</td>
+											<td>{{item.lecture_start}}</td>
+											<td>{{item.lecture_end}}</td>
+											<td></td>
+										</tr>
+									</tbody>
+								</template>
 							</table>
 	
-						<div class="paging_area"  id="surveyLectureListPagination"> </div>
+						<div class="paging_area"  id="surveyLectureListPagination" v-html="pagenavi"> </div>
 					</div>
 					<br><br><br>
 					
@@ -252,22 +484,22 @@
 						<div class ="sliderwrap">
 							<ul id = "chartHolder" class="charts">
 								<li>
-									<div id ="asd1" class="aChart"></div>
+									<div id ="asd1" class="aChart" ></div>
 								</li>
 								<li>	
-									<div id ="asd2" class="aChart"></div>
+									<div id ="asd2" class="aChart" ></div>
 								</li>
 								<li>
-									<div id ="asd3" class="aChart"></div>
+									<div id ="asd3" class="aChart" ></div>
 								</li>
 								<li>
-									<div id ="asd4" class="aChart"></div>
+									<div id ="asd4" class="aChart" ></div>
 								</li>
 								<li>
-									<div id ="asd5" class="aChart"></div>
+									<div id ="asd5" class="aChart" ></div> 
 								</li>
 							</ul>
-							<div class="bullets" id = "bulletsDiv">
+							<div class="bullets" id = "bulletsDiv" v-show="bulletsDiv">
 								<label for ="slide1">&nbsp;</label>
 								<label for ="slide2">&nbsp;</label>
 								<label for ="slide3">&nbsp;</label>

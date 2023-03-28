@@ -108,5 +108,43 @@ public class UserUpdateController {
 		
 		return returnMap;
 	}
+	
+
+	// 상세정보 가져오기
+	@RequestMapping("vueuserUpdateList.do")
+	@ResponseBody
+	public Map<String, Object> vueuserUpdateList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception{
+		
+		logger.info("+ Start " + className + ".userUpdateList");
+		logger.info("   - paramMap : " + paramMap);
+		
+		paramMap.put("loginID", session.getAttribute("loginId"));
+		
+		Map<String, Object> returnMap = new HashMap<String, Object>();
+		
+		UserUpdateModel userUpdateList = userUpdateService.userUpdateList(paramMap);
+		
+		returnMap.put("userUpdateList", userUpdateList);
+		
+		logger.info("+ End " + className + ".userUpdateList");
+		
+		return returnMap;
+	}
+	
+	// 개인정보 수정 저장
+	@RequestMapping("vuestudentUpdate.do")
+	@ResponseBody
+	public Map<String, Object> vuestudentUpdate(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception{
+		
+		Map<String, Object> returnMap = new HashMap<String, Object>();
+		
+		userUpdateService.studentUpdate(paramMap, request, session);
+		
+		returnMap.put("result", "SUCESS");
+		
+		return returnMap;
+	}
 
 }

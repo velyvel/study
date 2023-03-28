@@ -131,6 +131,36 @@ public class QnaController {
 	}
 	
 	/**
+	 * QnA 목록 화면 
+	 */
+	@RequestMapping("qnalistVue.do")
+	@ResponseBody
+	public Map<String, Object> qnalistVue(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".qnalist");
+		logger.info("   - paramMap : " + paramMap);
+		
+		int pagenum = Integer.parseInt( String.valueOf( paramMap.get("pagenum") ) );
+		int pageSize = Integer.parseInt( String.valueOf( paramMap.get("pageSize") ) );
+		int startnum = (pagenum - 1) * pageSize;
+		
+		Map <String, Object> returnData = new HashMap<String, Object>(); 
+		
+		paramMap.put("startnum", startnum);
+		paramMap.put("pageSize", pageSize);
+		
+		List<QnaModel> qnalist = qnaService.qnalist(paramMap);
+		int totalcnt = qnaService.qnacnt(paramMap);
+		returnData.put("qnalist",qnalist);
+		returnData.put("totalcnt",totalcnt);
+		
+		logger.info("+ End " + className + ".qnalist");
+
+		return returnData;
+	}
+	
+	/**
 	 * QnA 하단 상세 목록 qnacontent
 	 */
 	@RequestMapping("qnacontent.do")
@@ -201,6 +231,29 @@ public class QnaController {
 		logger.info("+ End " + className + ".replylist");
 
 		return "all/qna/replylist";
+	}
+	
+	/**
+	 * reply 상세목록  replylist
+	 */
+	@RequestMapping("replylistVue.do")
+	@ResponseBody
+	public Map<String,Object> replylistVue(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".replylist");
+		logger.info("   - paramMap : " + paramMap);
+		
+		Map <String, Object> returnData = new HashMap <String, Object>();
+		
+		List<QnaReplyModel> replylist = replyService.replylist(paramMap);
+		int totalcnt = replyService.replycnt(paramMap);
+		returnData.put("replylist", replylist);
+		returnData.put("totalcnt",totalcnt);
+		
+		logger.info("+ End " + className + ".replylist");
+
+		return returnData;
 	}
 	
 	/**

@@ -100,6 +100,39 @@ public class LecturePlanController {
 	}
 	
 	/**
+	 * 개설 강의 목록 조회
+	 */
+	@RequestMapping("lecturePlanListSearchVue.do")
+	@ResponseBody
+	public Map<String,Object> lecturePlanListSearchVue(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".lecturePlanListSearch");
+		logger.info("   - paramMap : " + paramMap);
+		
+		paramMap.put("loginID", session.getAttribute("loginId"));
+		
+		int pagenum =Integer.parseInt(String.valueOf(paramMap.get("pagenum")));
+		int pageSize =Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startnum = (pagenum - 1) * pageSize;
+		
+		Map<String,Object> returnData = new HashMap <String, Object>();
+		
+		paramMap.put("startnum", startnum);
+		paramMap.put("pageSize", pageSize);
+		
+		List<LecturePlanListModel> lecturePlanListSearch = lecturePlanListService.lecturePlanListSearch(paramMap);
+		int totalcnt = lecturePlanListService.lecturePlanListCnt(paramMap);
+		
+		returnData.put("lecturePlanListSearch", lecturePlanListSearch);
+		returnData.put("totalcnt", totalcnt);
+		
+		logger.info("+ End " + className + ".lecturePlanListSearch");
+
+		return returnData;
+	}
+	
+	/**
 	 * 강의 목록 선택
 	 */
 	@RequestMapping("LecturePlanSelect.do")
@@ -151,6 +184,39 @@ public class LecturePlanController {
 		logger.info("+ End " + className + ".weekPlanList");
 
 		return "tut/lecturePlan/weekPlanList";
+	}
+	
+	/**
+	 * 강의 주차별 계획 목록
+	 */
+	@RequestMapping("weekPlanListVue.do")
+	@ResponseBody
+	public Map<String, Object> weekPlanListVue(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".weekPlanList");
+		logger.info("   - paramMap : " + paramMap);
+		
+		paramMap.put("loginID", session.getAttribute("loginId"));
+		
+		int pagenum =Integer.parseInt(String.valueOf(paramMap.get("pagenum")));
+		int pageSize =Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startnum = (pagenum - 1) * pageSize;
+		
+		Map <String,Object> returnData = new HashMap<String,Object>();
+
+		paramMap.put("startnum", startnum);
+		paramMap.put("pageSize", pageSize);
+		
+		List<WeekPlanListModel> weekPlanList = lecturePlanListService.weekPlanList(paramMap);
+		int totalcnt = lecturePlanListService.weekPlanListCnt(paramMap);
+		
+		returnData.put("weekPlanList", weekPlanList);
+		returnData.put("totalcnt", totalcnt);
+		
+		logger.info("+ End " + className + ".weekPlanList");
+
+		return returnData;
 	}
 	
 	/**

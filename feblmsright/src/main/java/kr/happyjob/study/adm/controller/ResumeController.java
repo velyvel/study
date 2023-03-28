@@ -2,6 +2,7 @@ package kr.happyjob.study.adm.controller;
 
 import java.io.File;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import kr.happyjob.study.adm.model.ResumeModel;
 import kr.happyjob.study.adm.service.ResumeService;
@@ -97,6 +99,37 @@ public class ResumeController {
 	}
 	
 	/**
+	 * 개설 강의 목록 조회
+	 */
+	@RequestMapping("resumeLectureListSearchVue.do")
+	@ResponseBody
+	public Map<String, Object> resumeLectureListSearchVue(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".resumeLectureListSearch");
+		logger.info("   - paramMap : " + paramMap);
+		
+		int pagenum =Integer.parseInt(String.valueOf(paramMap.get("pagenum")));
+		int pageSize =Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startnum = (pagenum - 1) * pageSize;
+		
+		Map <String, Object> returnData = new HashMap<String, Object>();
+
+		paramMap.put("startnum", startnum);
+		paramMap.put("pageSize", pageSize);
+		
+		List<ResumeModel> resumeLectureListSearch = resumeService.resumeLectureListSearch(paramMap);
+		int totalcnt = resumeService.resumeLectureListCnt(paramMap);
+		
+		returnData.put("resumeLectureListSearch", resumeLectureListSearch);
+		returnData.put("totalcnt", totalcnt);
+		
+		logger.info("+ End " + className + ".resumeLectureListSearch");
+
+		return returnData;
+	}
+	
+	/**
 	 * 학생 목록 조회
 	 */
 	@RequestMapping("resumeLectureSelect.do")
@@ -122,6 +155,37 @@ public class ResumeController {
 		logger.info("+ End " + className + ".resumeLectureSelect");
 
 		return "adm/resume/resumeStudentList";
+	}
+	
+	/**
+	 * 학생 목록 조회
+	 */
+	@RequestMapping("resumeLectureSelectVue.do")
+	@ResponseBody
+	public Map <String, Object> resumeLectureSelectVue(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".resumeLectureSelect");
+		logger.info("   - paramMap : " + paramMap);
+		
+		int pagenum =Integer.parseInt(String.valueOf(paramMap.get("pagenum")));
+		int pageSize =Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startnum = (pagenum - 1) * pageSize;
+
+		paramMap.put("startnum", startnum);
+		paramMap.put("pageSize", pageSize);
+		
+		Map <String, Object> returnData = new HashMap<String,Object>();
+		
+		List<ResumeModel> resumeLectureSelect = resumeService.resumeLectureSelect(paramMap);
+		int totalcnt = resumeService.resumeLectureSelectCnt(paramMap);
+		
+		returnData.put("resumeLectureSelect", resumeLectureSelect);
+		returnData.put("totalcnt", totalcnt);
+		
+		logger.info("+ End " + className + ".resumeLectureSelect");
+
+		return returnData;
 	}
 	
 	/**

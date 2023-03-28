@@ -15,20 +15,17 @@
 
 <script type="text/javascript">
 
-	// 강의 목록 페이징 설정
-	var pageSizeLecture = 5;
-	var pageBlockSizeLecture = 5;
-	
-	// 학생 목록 페이징 설정
-	var pageSizeStudent = 5;
-	var pageBlockSizeStudent = 10;
 	
 	// 강의검색영역
 	var lecSearchArea;
 	// 강의목록영역
 	var divLectureList;
-	
+	// 학생검색영역
+	//var stuSearchArea;
+	// 학생목록영역
 	var divStudentList;
+	// 학생상세조회
+	var layer1;
 	
 	
 	/** OnLoad event */ 
@@ -48,11 +45,20 @@
 		lecSearchArea = new Vue({
 									el : "#lecSearchArea",
 								  data :  {
-									  lanme : ""
+									  lname : ""
 									  		
 								  }
 			
 		});
+		
+		/* stuSearchArea = new Vue({
+									el : "stuSearchArea",
+								  data : {
+									  sname : ""
+								  }
+			
+			
+		}); */
 		
 		divLectureList = new Vue({
 									el : "#divLectureList",
@@ -63,7 +69,13 @@
 									  pagesize : 5,
 									  blocksize : 10,
 									  pagenavi : "",
-								  }
+									  
+								  },
+								methods : {
+									fn_studentList : function(lecture_seq){
+										fn_studentList(lecture_seq);
+									}
+								} 
 			
 		});
 		
@@ -77,9 +89,33 @@
 									  blocksize : 10,
 									  pagenavi : "",
 									  stuList : false,
-								  }
+									  lecSeq : 0,
+									  sname : "",
+								  },
+								methods : {
+									fn_studentSelect : function(loginID){
+										fn_studentSelect(loginID);
+									}
+									
+								}
 						
 						});
+		
+		layer1 = new Vue({
+							el : "#layer1",
+						  data : {
+							  loginID : "",
+							  regdate : "",
+							  name : "",
+							  birthday : "",
+							  email : "",
+							  address : "",
+							  stLecNo : 0,
+							  stLecName : "",
+							  stLecDate : "",
+							  stLecSta : "",
+						  }
+		});
 		
 		
 	}
@@ -123,22 +159,130 @@
 				lname : lecSearchArea.lname
 		}
 		
-		var lectureListCallBack = function(data){
+		var lectureListCallBack = function(lecData){
 			
 			divLectureList.cpage = pageNum;
 			
-			console.log("lectureListCallBack : " + JSON.stringify(data));
+			console.log("lectureListCallBack : " + JSON.stringify(lecData));
 			
-			divLectureList.listitem = data.lectureList;
-			divLectureList.totalcnt = data.totalcnt;
+			divLectureList.listitem = lecData.lectureList;
+			divLectureList.totalcnt = lecData.totalCnt;
 			
 						
-			var paginationHtml = getPaginationHtml(pageNum, divLectureList.totalCnt, divLectureList.pagesize, divLectureList.blocksize, 'lectureList');
+			var paginationHtml = getPaginationHtml(pageNum, divLectureList.totalcnt, divLectureList.pagesize, divLectureList.blocksize, 'lectureList');
 			divLectureList.pagenavi = paginationHtml; 
 			
 			
 		}
 		callAjax("/adm/vuelectureList.do", "post", "json", "false", param, lectureListCallBack)
+	}
+	
+	// 학생 목록 들어가기전 백업
+	function fn_studentList(lecSeq){
+		
+		console.log("fn_studentList lecSeq :  " + lecSeq);
+		
+		divStudentList.lecSeq = lecSeq;
+		
+		studentList();
+	}
+	
+	// 학생 목록 조회
+	function studentList(pageNum){
+		
+		divStudentList.stuList = true;
+		
+		
+		pageNum = pageNum || 1;
+		
+		var param = {
+				pageNum : pageNum,
+				pageSize : divStudentList.pagesize,
+				lecSeq : divStudentList.lecSeq,
+				sname : divStudentList.sname
+		}
+		
+		var studentListCallBack = function(stuData){
+			
+			console.log("studentListCallBack : " +   JSON.stringify(stuData));
+			
+						
+			divStudentList.cpage = pageNum;
+			
+			divStudentList.listitem = stuData.studentList;
+			divStudentList.totalcnt = stuData.totalCnt;
+			
+			var paginationHtml = getPaginationHtml(pageNum, divStudentList.totalcnt, divStudentList.pagesize, divStudentList.blocksize, 'studentList');
+			
+			divStudentList.pagenavi = paginationHtml; 
+		}
+		callAjax("/adm/vuestudentList.do", "post", "json", "false", param, studentListCallBack);
+	}
+	
+	 // 학생 상세조회 전 백업
+	function fn_studentSelect(loginID){
+		
+		console.log("fn_studentSelect loginID : " + loginID);
+		
+		divStudentList.loginID = loginID;
+		
+		studentSelect();
+	}
+	
+	// 학생 상세조회
+	function studentSelect(){
+		
+		var param = {
+				loginID : divStudentList.loginID
+		}
+		
+		var studentSelectCallback = function(stuSelData){
+			
+			console.log("stuSelData : " + JSON.stringify(stuSelData));
+			
+			fn_initModal(stuSelData.studentSelect);
+			
+			gfModalPop("#layer1");
+		}
+		
+		callAjax("/adm/studentSelect.do", "post", "json", "false", param, studentSelectCallback);
+		
+	} 
+	
+	// 모달창에 데이터 넣기
+	function fn_initModal(studentSelect) {
+		
+		layer1.loginID = studentSelect.loginID;
+		layer1.regdate = studentSelect.regdate;
+		layer1.name = studentSelect.name;
+		layer1.birthday = studentSelect.birthday;
+		layer1.email = studentSelect.email;
+		layer1.address = studentSelect.address;
+		
+		layer1.stLecNo = studentSelect.lecture_no;
+		layer1.stLecName = studentSelect.lecture_name;
+		layer1.stLecDate = studentSelect.lecture_start + ' ~ ' + studentSelect.lecture_end;
+		layer1.stLecSta = studentSelect.student_lecture;
+	}
+	
+	// 학생 수강 취소
+    function cancelLecture() {
+      console.log('들어왔다');
+
+      console.log(layer1.loginID);
+
+      //var action = $("#action").val('D');
+      var param = {
+				loginID : layer1.loginID
+		}
+		
+		var cancelLectureCallBack = function(){
+			
+			studentList();
+			
+			gfCloseModal();
+		}
+		callAjax("/adm/studentCancel.do", "post", "json", "false", param, cancelLectureCallBack);
 	}
 
 	
@@ -183,7 +327,7 @@
 						<p class="conTitle" id="lecSearchArea">
 							<span>학생 관리</span> <span class="fr"> 
 								강 의 명	
-		     	                <input type="text" style="width: 200px; height: 25px;" id="lname" name="lanme" v-model="lanme">                    
+		     	                <input type="text" style="width: 200px; height: 25px;" id="lname" name="lname" v-model="lname">                    
 			                    <a href="" class="btnType blue" id="btnSearchLecture" name="btn"><span>검  색</span></a>
 							</span>
 						</p>
@@ -220,10 +364,10 @@
 								</template>
 								<template v-else>
 									<tbody v-for="(item,index) in listitem">
-										<tr @click="fn_studentList(lecSeq)">
+										<tr>
 											<td>{{item.num}}</td>
 											<td>{{item.lecture_no}}</td>
-											<td>{{item.lecture_name}}</td>
+											<td @click="fn_studentList(item.lecture_seq)">{{item.lecture_name}}</td>
 											<td>{{item.name}}</td>
 											<td>{{item.lecture_start}} ~ {{item.lecture_end}}</td>
 										</tr>
@@ -240,10 +384,10 @@
 					
 					<div id="divStudentList" v-show="stuList">
 						
-						<p class="conTitle">
+						<p class="conTitle" >
 							<span>학생 목록</span> <span class="fr"> 
 								학 생 명	
-		     	                <input type="text" style="width: 200px; height: 25px;" id="sname" name="sname">                    
+		     	                <input type="text" style="width: 200px; height: 25px;" id="sname" name="sname" v-model="sname">                    
 			                    <a href="" class="btnType blue" id="btnSearchStudent" name="btn"><span>검  색</span></a>
 							</span>
 						</p>
@@ -270,7 +414,26 @@
 										<th scope="col">비고</th>
 									</tr>
 								</thead>
-								<tbody id="tbodyStudentList"></tbody>
+								
+								<template v-if="totalcnt === 0">
+									<tbody>
+										<tr>
+											<td colspan=5>데이터가 존재하지 않습니다.</td>
+										</tr>
+									</tbody>
+								</template>
+								<template v-else>
+									<tbody v-for="(item,index) in listitem">
+										<tr>
+											<td @click="fn_studentSelect(item.loginID)">{{item.name}}({{item.loginID}})</td>
+											<td>{{item.lecture_name}}</td>
+											<td>{{item.hp}}</td>
+											<td>{{item.regdate}}</td>
+											<td></td>
+										</tr>
+									</tbody>
+								</template>
+								
 							</table>
 	
 						<div class="paging_area"  id="studentListPagination" v-html="pagenavi"> </div>
@@ -308,23 +471,23 @@
 					<tbody>
 						<tr>
 							<th scope="row">ID</th>
-							<td><div id="loginID"></div></td>
+							<td><div id="loginID" v-html="loginID"></div></td>
 							<th scope="row">가입일자</th>
-							<td><div id="regdate"></div></td>
+							<td><div id="regdate" v-html="regdate"></div></td>
 						</tr>
 						<tr>
 							<th scope="row">이름</th>
-							<td><div id="name"></div></td>
+							<td><div id="name" v-html="name"></div></td>
 							<th scope="row">생년월일 </th>
-							<td><div id="birthday"></div></td>
+							<td><div id="birthday" v-html="birthday"></div></td>
 						</tr>
 						<tr>
 							<th scope="row">이메일</th>
-							<td colspan="4"><div id="email"></div></td>
+							<td colspan="4"><div id="email" v-html="email"></div></td>
 						</tr>
 						<tr>
 							<th scope="row">주소</th>
-							<td colspan="4"><div id="address"></div></td>
+							<td colspan="4"><div id="address" v-html="address"></div></td>
 						</tr>
 					</tbody>
 				</table>
@@ -358,12 +521,12 @@
 								</thead>
 								<tbody>
 									<tr>
-										<td><div id="stLecNo"></div></td>
-										<td><div id="stLecName"></div></td>
+										<td><div id="stLecNo" v-html="stLecNo"></div></td>
+										<td><div id="stLecName" v-html="stLecName"></div></td>
 										<td>
-											<div id="stLecDate"></div>
+											<div id="stLecDate" v-html="stLecDate"></div>
 										</td>
-										<td><div id="stLecSta"></div></td>
+										<td><div id="stLecSta" v-html="stLecSta"></div></td>
 										<td>
 										<a href="" class="btnType blue" id="btnCancelLecture" name="btn"><span>수강취소</span></a>
 										</td>

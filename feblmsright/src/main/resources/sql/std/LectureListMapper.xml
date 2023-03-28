@@ -28,10 +28,6 @@
 				<if test="(lectureName != null) and (!lectureName.equals(''))">
 				      and lc.lecture_no = #{lectureName}
 				</if>
-				
-				<if test="(searchWord != null) and (!searchWord.equals(''))">
-				      and lecture_total <![CDATA[>=]]> #{searchWord}      	
-				</if>
 	  </where>
        ORDER BY lc.lecture_seq DESC
        LIMIT #{startnum}, #{pageSize}

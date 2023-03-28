@@ -88,7 +88,6 @@ select[readonly] {
 				pagenum : pagenum,
 				pageSize : pageSizeLecture,
 				lectureName : $("#lectureName").val(),
-				searchWord : $("#searchWord").val(),
 				// checkBoxStatus : $("#depositCheck").val()
 				checkBoxStatus : checkBox
 		};
@@ -394,9 +393,6 @@ select[readonly] {
 						<p class="conTitle">
 							<span>강의관리</span> <span class="fr"> 
 							    <select name="lectureName" id="lectureName" style="width: 150px;"></select>
-							    
-								마감인원	
-		     	                <input type="text" style="width: 300px; height: 25px;" id="searchWord" name="searchWord" placeholder="숫자만 입력하세요." onkeydown="fFilterNumber(event);">                    
 			                    <a href="" class="btnType blue" id="btnSearchLecture" name="btn"><span>검  색</span></a>
 			                    <a class="btnType blue" href="javascript:fn_lecturePopup();" name="modal"><span>강의 등록</span></a>
 			                    <span style="margin: 10px; "><input type="checkbox" id="depositCheck" onChange = "lectureListSearch()"> 종료여부 </span>

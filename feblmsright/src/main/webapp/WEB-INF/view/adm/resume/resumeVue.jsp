@@ -15,6 +15,10 @@
 
 <script type="text/javascript">
 
+	var resumemange;
+	var divResumeLecture;
+	var divResumeStudent;
+
 	// 강의 목록 페이징 설정
 	var pageSizeresumeLecture = 5;
 	var pageBlockSizeresumeLecture = 5;
@@ -26,6 +30,10 @@
 	
 	/** OnLoad event */ 
 	$(function() {
+		init();
+		
+		resumeLectureListSearch();
+		
 		comcombo("lecture_no", "lectureno", "all", "");
 
 		// 버튼 이벤트 등록
@@ -52,6 +60,131 @@
 		});
 	}
 	
+	function init(){
+		resumemange = new Vue({
+			el : "#resumemange",
+			data : {
+				lectureNameSearch : "",
+			},
+		})
+		
+		divResumeLecture = new Vue({
+			 el : "#divResumeLecture",
+			 data : {
+				 pagenum : 0,
+				 pageSize : pageSizeresumeLecture,
+				 pageBlockSize : pageBlockSizeresumeLecture,
+				 lectureNameSearch : "",
+				 listitem : [],
+				 totalcnt : 0,
+				 pagenavi : "",
+				 cpage : 0,
+			 },
+			 methods : {
+				 resumeStudentList : function(lecture_no) {
+					 resumeStudentList(lecture_no);
+				 }
+			 }
+		})
+		
+		divResumeStudent = new Vue({
+			el : "#divResumeStudent",
+			data : {
+				pagenum : 0,
+				pageSize : pageSizeresumeStudent,
+				pageBlockSize : pageBlockSizeresumeStudent,
+				show : false,
+				lectureno : "",
+				totalcnt : 0,
+				listitem : [],
+				pagenavi : "",
+				loginID : "",
+			},
+			methods : {
+				fn_resumeDownload : function(loginID){
+					fn_resumeDownload(loginID);
+				}
+			}
+		})
+	}
+	
+	
+	//강의목록 조회
+	function resumeLectureListSearch(pagenum){
+		var pagenum = pagenum || 1;
+		
+		var param = {
+				pagenum : pagenum,
+				pageSize : pageSizeresumeLecture,
+				lectureNameSearch : resumemange.lectureNameSearch
+		}
+		
+		var listcallback = function(returndata){
+			console.log("returndata : " + JSON.stringify(returndata));
+			
+			divResumeLecture.totalcnt = returndata.totalcnt;
+			divResumeLecture.listitem = returndata.resumeLectureListSearch;
+			
+			var paginationHtml = getPaginationHtml(pagenum, divResumeLecture.totalcnt, pageSizeresumeLecture, pageBlockSizeresumeLecture, 'resumeLectureListSearch');
+			
+			divResumeLecture.pagenavi = paginationHtml;
+
+
+			divResumeStudent.show = false;
+		
+		}
+		
+		callAjax("/adm/resumeLectureListSearchVue.do", "post" , "json", "true", param, listcallback);
+	}
+	
+	function resumeStudentList(lecture_no){
+		divResumeStudent.show = true;
+		
+		divResumeStudent.lectureno=lecture_no;
+		fn_resumeStudentList();
+	}
+	
+	//학생 조회
+	function fn_resumeStudentList(pagenum){
+		pagenum = pagenum || 1;
+		
+		var param = {
+				pagenum : pagenum,
+				pageSize : pageSizeresumeStudent,
+				lectureno : divResumeStudent.lectureno,
+				lectureNameSearch : resumemange.lectureNameSearch
+		}
+		
+		var listcallback = function(returndata){
+			console.log("returndata : " + JSON.stringify(returndata));
+			
+			divResumeStudent.listitem = returndata.resumeLectureSelect
+			divResumeStudent.totalcnt = returndata.totalcnt
+			
+			var paginationHtml = getPaginationHtml(pagenum, divResumeStudent.totalcnt, pageSizeresumeStudent, pageBlockSizeresumeStudent, 'fn_resumeStudentList');
+			
+			divResumeStudent.pagenavi = paginationHtml;
+			
+		}
+		
+		callAjax("/adm/resumeLectureSelectVue.do", "post" , "json", "true", param, listcallback);
+	}
+	
+	//파일 다운로드
+	function fn_resumeDownload(loginID){
+		divResumeStudent.loginID=loginID;
+		
+		var loginID = divResumeStudent.loginID;
+	    
+		if(loginID == null){
+			return;
+		}
+		var params = "<input type='hidden' name='loginID' id='loginID' value='"+ loginID +"' />";
+
+		jQuery(
+				"<form action='/adm/Download.do' method='post'>"
+						+ params + "</form>").appendTo('body').submit().remove();
+	}
 	
 	
 </script>
@@ -89,16 +222,16 @@
 								<a href="../adm/resume.do" class="btn_set refresh">새로고침</a>
 						</p>
 
-						<p class="conTitle">
+						<p class="conTitle" id="resumemange">
 							<span>이력서 관리</span> <span class="fr">
 							
 								강의명
-		     	                <input type="text" style="width: 300px; height: 25px;" id="lectureNameSearch" name="lectureNameSearch">                    
+		     	                <input type="text" style="width: 300px; height: 25px;" id="lectureNameSearch" name="lectureNameSearch" v-model="lectureNameSearch">                    
 			                    <a href="" class="btnType blue" id="btnLectureSearch" name="btn"><span>검  색</span></a>
 							</span>
 						</p>
 						
-						<div class="divResumeLecture">
+						<div id="divResumeLecture">
 							
 							<table class="col">
 								<caption>caption</caption>
@@ -121,16 +254,25 @@
 										<th scope="col">강의 종료일</th>
 									</tr>
 								</thead>
-								<tbody id="resumeLectureList"></tbody>
+								<tbody v-for="(item, index) in listitem">
+									<tr>
+										<td>{{item.lecture_no}}</td>
+										<td><a href="" @click.prevent="resumeStudentList(item.lecture_no)">{{item.lecture_name}}</a></td>
+										<td>{{item.name}}</td>
+										<td>{{item.lecture_person}}</td>
+										<td>{{item.lecture_start}}</td>
+										<td>{{item.lecture_end}}</td>
+									</tr>
+								</tbody>
 							</table>
-						</div>
 	
-						<div class="paging_area"  id="resumeLecturePagination"> </div>
+						<div class="paging_area"  id="resumeLecturePagination" v-html="pagenavi"> </div>
+						</div>
 						
 						<br/>
 						<br/>
 						
-						<div class="divResumeStudent">
+						<div id="divResumeStudent" v-show="show">
 							
 							<table class="col">
 								<caption>caption</caption>
@@ -151,11 +293,30 @@
 										<th scope="col">이력서</th>
 									</tr>
 								</thead>
-								<tbody id="resumeStudentList"></tbody>
+								<template v-if="totalcnt === 0">
+									<tbody>
+										<tr>
+											<td colspan=5> 조회된 데이터가 없습니다.</td>
+										</tr>
+									</tbody>
+								</template>
+								<template v-else>
+									<tbody v-for="(item, index) in listitem">
+										<tr>
+											<td>{{item.loginID}}</td>
+											<td>{{item.name}}</td>
+											<td>{{item.user_hp}}</td>
+											<td>{{item.user_email}}</td>
+											<td v-if="item.resume_file != null"><a href="" @click.prevent="fn_resumeDownload(item.loginID)">[다운로드]</td>
+											<td v-else></td>
+										</tr>
+									</t-body>
+								</template>
 							</table>
-						</div>
+						
 	
-						<div class="paging_area"  id="resumeStudentPagination"> </div>
+						<div class="paging_area"  id="resumeStudentPagination" v-html="pagenavi"> </div>
+						</div>
 						
 						
 						

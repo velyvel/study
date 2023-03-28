@@ -68,6 +68,36 @@ public class CounselController {
 
 		return "tut/counsel/counselVue";
 	}
+	
+
+	// vue 강의 목록 불러오기
+	@RequestMapping("vuecounselLectureList.do")
+	@ResponseBody
+	public Map<String, Object> vuecounselLectureList(Model model, @RequestParam Map<String, Object> paramMap,
+			HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
+
+		logger.info("+ Start " + className + ".vuecounselLectureList");
+		logger.info("   - paramMap : " + paramMap);
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+
+		int pageNum = Integer.parseInt(String.valueOf(paramMap.get("pageNum")));
+		int pageSize = Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startPage = (pageNum - 1) * pageSize;
+		
+		paramMap.put("pageSize", pageSize);
+		paramMap.put("startPage", startPage);
+		
+		List<CounselModel> counselLectureList = counselService.counselLectureList(paramMap);
+		int totalcnt = counselService.counselLectureListCnt(paramMap);
+		
+		returnmap.put("counselLectureList", counselLectureList);
+		returnmap.put("totalcnt", totalcnt);
+		
+		logger.info("+ End " + className + ".vuecounselLectureList");
+
+		return returnmap;
+	}
 
 	// 강의 목록 불러오기
 	@RequestMapping("counselLectureList.do")
@@ -120,6 +150,57 @@ public class CounselController {
 
 		return "tut/counsel/counselStudentList";
 	}
+	
+
+	// 학생 목록 불러오기
+	@RequestMapping("vuecounselStudentList.do")
+	@ResponseBody
+	public Map<String, Object> vuecounselStudentList(Model model, @RequestParam Map<String, Object> paramMap,
+			HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
+
+		logger.info("+ Start " + className + ".vuecounselStudentList");
+		logger.info("   - paramMap : " + paramMap);
+
+		int pageNum = Integer.parseInt(String.valueOf(paramMap.get("pageNum")));
+		int pageSize = Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startPage = (pageNum - 1) * pageSize;
+
+		paramMap.put("pageSize", pageSize);
+		paramMap.put("startPage", startPage);
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		List<CounselModel> counselStudentList = counselService.counselStudentList(paramMap);
+		int totalCnt = counselService.counselStudentListCnt(paramMap);
+
+		returnmap.put("counselStudentList", counselStudentList);
+		returnmap.put("totalCnt", totalCnt);
+
+		logger.info("+ End " + className + ".vuecounselStudentList");
+
+		return returnmap;
+	}
+
+	// 학생 상세보기
+	@RequestMapping("vuedetailStudent.do")
+	@ResponseBody
+	public Map<String, Object> vuedetailStudent(Model model, @RequestParam Map<String, Object> paramMap,
+			HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
+
+		logger.info("+ Start " + className + ".vuedetailStudent");
+		logger.info("   - paramMap : " + paramMap);
+		
+		Map<String, Object> returnMap = new HashMap<String, Object>();
+		
+		CounselModel detailStudent = counselService.detailStudent(paramMap);
+		
+		returnMap.put("detailStudent", detailStudent);
+
+		logger.info("+ End " + className + ".vuedetailStudent");
+		
+		return returnMap;
+	}
+	
 
 	// 학생 상세보기
 	@RequestMapping("detailStudent.do")
@@ -140,7 +221,36 @@ public class CounselController {
 		
 		return returnMap;
 	}
+	
+	// 상담 일지 저장 및 수정,삭제
+		@RequestMapping("vuesaveCounsel.do")
+		@ResponseBody
+		public Map<String, Object> vuesaveCounsel(Model model, @RequestParam Map<String, Object> paramMap,
+				HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
 
+			logger.info("+ Start " + className + ".vuesaveCounsel");
+			logger.info("   - paramMap : " + paramMap);
+
+			Map<String, Object> returnMap = new HashMap<String, Object>();
+			
+			String action = String.valueOf(paramMap.get("action"));
+			
+			if("I".equals(action)){
+				counselService.insertCounsel(paramMap);
+			} else if("U".equals(action)){
+				System.out.println("들어왔다");
+				counselService.updateCounsel(paramMap);
+			} else if("D".equals(action)) {
+				counselService.deleteCounsel(paramMap);
+			}
+
+			returnMap.put("result", "sucess");
+
+			logger.info("+ End " + className + ".vuesaveCounsel");
+
+			return returnMap;
+		}
+		
 	// 상담 일지 저장 및 수정,삭제
 	@RequestMapping("saveCounsel.do")
 	@ResponseBody

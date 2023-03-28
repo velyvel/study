@@ -148,6 +148,35 @@ public class StudentController {
 		return "adm/student/studentList";
 	}
 	
+	// 학생 목록 조회(Vue)
+	@RequestMapping("vuestudentList.do")
+	@ResponseBody
+	public Map<String, Object> vuestudentList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".studentList");
+		logger.info("   - paramMap : " + paramMap);
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		int pageNum = Integer.parseInt(String.valueOf(paramMap.get("pageNum")));
+		int pageSize = Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startPage = (pageNum - 1) * pageSize;
+		
+		paramMap.put("pageSize", pageSize);
+		paramMap.put("startPage", startPage);
+		
+		List<StudentModel> studentList = studentService.studentList(paramMap);
+		int totalCnt = studentService.studentListCnt(paramMap);
+		
+		returnmap.put("studentList", studentList);
+		returnmap.put("totalCnt", totalCnt);
+		
+		logger.info("+ End " + className + ".studentList");
+		
+		return returnmap;
+	}
+	
 	// 학생 상세 조회
 	@RequestMapping("studentSelect.do")
 	@ResponseBody

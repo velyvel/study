@@ -14,6 +14,30 @@ public class TutSurveyModel {
 	private String name;
 	private int lecture_seq;
 	
+	// 설문조사 강의 목록
+	private String lecture_name;
+	private String lecture_start;
+	private String lecture_end;
+	
+	
+	public String getLecture_name() {
+		return lecture_name;
+	}
+	public void setLecture_name(String lecture_name) {
+		this.lecture_name = lecture_name;
+	}
+	public String getLecture_start() {
+		return lecture_start;
+	}
+	public void setLecture_start(String lecture_start) {
+		this.lecture_start = lecture_start;
+	}
+	public String getLecture_end() {
+		return lecture_end;
+	}
+	public void setLecture_end(String lecture_end) {
+		this.lecture_end = lecture_end;
+	}
 	public int getServey_no() {
 		return servey_no;
 	}

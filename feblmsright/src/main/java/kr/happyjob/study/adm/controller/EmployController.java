@@ -102,6 +102,37 @@ public class EmployController {
 	}
 	
 	/**
+	 * 취업 정보 등록 리스트 vueempclasslist
+	 */
+	@RequestMapping("vueempclasslist.do")
+	@ResponseBody
+	public Map<String, Object> vueempclasslist(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".vueempclasslist");
+		logger.info("   - paramMap : " + paramMap);
+		
+		int pagenum = Integer.parseInt( String.valueOf( paramMap.get("pagenum") ) );
+		int pageSize = Integer.parseInt( String.valueOf( paramMap.get("pageSize") ) );
+		int startnum = (pagenum - 1) * pageSize;
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+
+		paramMap.put("startnum", startnum);
+		paramMap.put("pageSize", pageSize);
+		
+		List<EmployModel> empclasslist = empService.empclasslist(paramMap);
+		int totalcnt = empService.studentclasscnt(paramMap);
+		
+		returnmap.put("empclasslist", empclasslist);
+		returnmap.put("totalcnt", totalcnt);
+		
+		logger.info("+ End " + className + ".vueempclasslist");
+		
+		return returnmap;
+	}
+	
+	/**
 	 * 학생 employee detail 내용 detailcontent
 	 */
 	@RequestMapping("detailcontent.do")
@@ -122,6 +153,52 @@ public class EmployController {
 	}
 	
 	/**
+	 * 학생 employee detail 내용 detailcontent
+	 */
+	@RequestMapping("vuedetailcontent.do")
+	@ResponseBody
+	public Map<String, Object> vuedetailcontent(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+
+		logger.info("+ Start " + className + ".vuedetailcontent");
+		logger.info("   - paramMap : " + paramMap);
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		List<EmployModel> employdetaillist = empService.detailcontent(paramMap);
+		int totalcnt = empService.detailcnt(paramMap);
+		
+		returnmap.put("employdetaillist", employdetaillist);
+		returnmap.put("totalcnt", totalcnt);
+		
+		logger.info("+ End " + className + ".vuedetailcontent");
+		
+		return returnmap;
+	}
+	
+	/**
+	 * 학생 employee detail 내용 detailcontent
+	 */
+	@RequestMapping("vuesdetailcontent.do")
+	@ResponseBody
+	public Map<String, Object> vuesdetailcontent(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+
+		logger.info("+ Start " + className + ".vuesdetailcontent");
+		logger.info("   - paramMap : " + paramMap);
+		
+		EmployModel empInfo = empService.sdetailcontent(paramMap);
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		returnmap.put("empInfo", empInfo);
+		
+		logger.info("+ End " + className + ".vuesdetailcontent");
+		
+		return returnmap;
+	}
+	
+	/**
 	 * 상단 취업 학생 추가 (insert, update)
 	 */
 	@RequestMapping("empsave.do")
@@ -139,6 +216,8 @@ public class EmployController {
 			empService.empinsert(paramMap);
 		} else if("U".equals(empaction)){
 			empService.empupdate(paramMap);
+		} else if("D".equals(empaction)){
+			empService.empdelete(paramMap);
 		}
 		
 		logger.info("+ End " + className + ".empsave");

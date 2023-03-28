@@ -16,21 +16,89 @@
 <script type="text/javascript">
 
 	// 강의 목록 페이징 설정
-	var pageSizeReference = 5;
-	var pageBlockSizeReference = 5;
+	//var pageSizeReference = 5;
+	//var pageBlockSizeReference = 5;
 	
 	// 상세코드 페이징 설정
-	var pageSizeReferenceList = 5;
-	var pageBlockSizeReferenceList = 10;
+	//var pageSizeReferenceList = 5;
+	//var pageBlockSizeReferenceList = 10;
 	
+	var lsearcharea;
+	var llistarea;
+	var cList;
+	var layer1;
 	
 	/** OnLoad event */ 
 	$(function() {
-		comcombo("lecture_no", "lecturename", "all", "");
+		
+		init();
+		
+		// 학습자료 조회(=강의목록에서 가져와서 조회)
+		LectureList();
 		
 		// 버튼 이벤트 등록
 		fRegisterButtonClickEvent();
 	});
+	
+	function init(){
+		lsearcharea = new Vue({
+			el : "#lsearcharea",
+			data : {
+				lecturename : "",
+			}
+		});// lsearcharea
+		
+		llistarea = new Vue ({
+			el : "#llistarea",
+			data : {
+				listitem : [], // 배열 형식으로 받아온다
+				totalcnt : 0, // 총 몇개가 있는지
+				cpage : 0, // 현재 페이지
+				pagesize : 5, // 페이지 행 몇개씩?
+				blocksize : 5, // 네비게이션으로 5개씩 나오게
+				pagenavi : "", // vhtml 연결할 놈이어서 str로 초기화
+			}, methods : {
+				fn_referenceselect : function(lecture_seq) {
+					fn_referenceselect(lecture_seq);
+				}
+			}
+		});//llistarea
+		
+		cList = new Vue({
+			el : "#cList",
+			data : {
+				listitem : [], // 배열 형식으로 받아온다
+				totalcnt : 0, // 총 몇개가 있는지
+				cpage : 0, // 현재 페이지
+				pagesize : 5, // 페이지 행 몇개씩?
+				blocksize : 10, // 네비게이션으로 5개씩 나오게
+				pagenavi : "", // vhtml 연결할 놈이어서 str로 초기화
+				lectureseq : 0,
+			},
+			methods : {
+				fn_referencemodify : function(reference_no) {
+					fn_referencemodify(reference_no);
+				}
+			}
+			
+		}); // cList
+		
+		comcombo("lecture_no", "lecturename", "all", "");
+		
+ 		layer1 = new Vue({
+			el : "#layer1",
+			data : {
+				lectureseq : 0,
+				newreferenceno : 0,
+				reference_title : "",
+				reference_content : "",
+				reference_file : "",
+				action : "",
+			},
+		});
+		
+		
+	}; //init
 	
 
 	/** 버튼 이벤트 등록 */
@@ -58,6 +126,272 @@
 		});
 	}
 	
+	/* 강의목록 조회_학습자료 조회됨 */
+	
+	function LectureList(pagenum){
+		pagenum = pagenum || 1;
+		
+		// 전해줄 param
+		var param = {
+				pagenum : pagenum,
+				pageSize : llistarea.pagesize,
+				lecturename : lsearcharea.lecturename
+		};
+		
+		// callback 함수
+		var listcallback = function(returndata) {
+			console.log("returndata : " + JSON.stringify(returndata));
+			
+			
+			llistarea.listitem = returndata.LectureList;
+			llistarea.totalcnt = returndata.totalcnt;
+			
+			var paginationHtml = getPaginationHtml(pagenum, llistarea.totalcnt, llistarea.pagesize, llistarea.blocksize, 'LectureList');
+			
+			llistarea.pagenavi = paginationHtml;	
+			
+			//fn_referenceselectlist();
+			
+		}; 
+		
+		// ** Ajax ** 
+		//callAjax("","","","",,);형태로 사용, commonAjax.js, Ajax참고용
+		callAjax("/tut/vueLectureList.do","post","json","true",param,listcallback);
+		
+		
+	}; // LectureList,강의 목록 조회 
+	
+	/* 목록 눌러서 학습자료 목록 조회 */
+	function fn_referenceselect(lectureseq) {
+		cList.lectureseq = lectureseq;
+		
+		fn_referenceselectlist();
+	}; // fn_referenceselect	
+	
+	/* 학습자료 목록 조회 */
+	function fn_referenceselectlist(pagenum) {
+		
+		pagenum = pagenum || 1;
+		
+		var param = {
+				pagenum : pagenum,
+				pageSize : cList.pagesize,
+				lectureseq : cList.lectureseq
+		};
+		
+		pagenum = pagenum || 1;
+		
+		var listcallback = function(returndata) {
+			console.log("returndata : " + JSON.stringify(returndata));
+			// retrundata를 json형태로 console창에 출력해서 확인한다.
+			
+ 			cList.listitem = returndata.referenceselectlist;
+			cList.totalcnt = returndata.totalcnt;
+			
+			var paginationHtml = getPaginationHtml(pagenum, llistarea.totalcnt, llistarea.pagesize, llistarea.blocksize, 'fn_referenceselectlist');
+			
+			llistarea.pagenavi = paginationHtml;	
+			
+		};
+		
+		callAjax("/tut/vuereferenceselectlist.do","post","json","true",param,listcallback);
+		
+		
+	}; //fn_referenceselectlist
+	
+	/* 학습자료 등록, 수정 모달창 */
+	function fn_referencedownload (referenceno){
+		
+		if(referenceno == null || referenceno == "" || referenceno == undefined){
+		
+			var lectureseq = cList.lectureseq;
+		
+			if(lectureseq == null || lectureseq == "" || lectureseq == undefined){
+			
+				alert("강의를 먼저 선택해 주세요.");
+				return;
+			
+			}
+		
+			// 폼 초기화
+			fn_referenceSelectForm();
+		
+			// 모달 팝업
+			gfModalPop("#layer1");
+		
+		} else {
+			
+			layer1.action = "U";
+			
+			fn_referencemodify(referenceno);
+			
+		}
+		
+	}; // fn_referencedownload
+	
+	/* 학습자료 모달창 초기화 폼 */
+	function fn_referenceSelectForm(referenceinfo) {
+		if(referenceinfo == "" || referenceinfo == null || referenceinfo == undefined){
+			layer1.action = "I";
+			
+			layer1.lectureseq = cList.lectureseq;
+			layer1.newreferenceno = "";
+			layer1.reference_title = "";
+			layer1.reference_content = "";
+			layer1.reference_file = "";
+			
+		}else{
+			
+			
+/* 			layer1.lecture_seq = cList.lectureseq;
+			layer1.reference_no = object.reference_no;
+			layer1.reference_title = object.reference_title;
+			layer1.reference_content = object.reference_content;
+			
+			layer1.reference_file = object.reference_file; */
+			// 만약 file이 null,"",undefined일경우 .empty이다?
+			
+			layer1.lectureseq = cList.lectureseq;
+			$("#reference_no").val(referenceinfo.reference_no);
+			$("#reference_title").val(referenceinfo.reference_title);
+			$("#reference_content").val(referenceinfo.reference_content);
+			$("#reference_file").val("");
+			
+			if(referenceinfo.reference_file == null || referenceinfo.reference_file == "" || referenceinfo.reference_file == undefined){
+				
+				$("#fileinfo").empty();
+			
+			} else {
+				
+				var readfilename = referenceinfo.reference_file;
+			    var filearr = readfilename.split(".");
+			    var inserthtml = "";
+			         
+			   inserthtml = "<a href='javascript:fn_download()'>" + referenceinfo.reference_file + "</a>";
+			    
+			    $("#fileinfo").empty().append(inserthtml);
+
+			}
+			
+			$("#btnDeleteReference").show();
+			
+		}
+		
+	}; //fn_referenceSelectForm();
+	
+	/* 학습자료 다운로드 */
+	function fn_download() {
+		
+		var referenceno = $("#reference_no").val();
+	    
+		if(referenceno == null){
+			return;
+		}
+		var params = "<input type='hidden' name='referenceno' value='"+ referenceno +"' />";
+
+		jQuery(
+				"<form action='/tut/referencedownload.do' method='post'>"
+						+ params + "</form>").appendTo('body').submit().remove();
+	
+	}
+	
+	/* 학습자료 목록 detail */
+	function fn_referencemodify(referenceno){
+		var param = {
+				referenceno : referenceno
+		};
+		
+		var selectcallback = function(selectresult){
+			
+			console.log("selectcallback : " + JSON.stringify(selectresult));
+			
+			fn_referenceSelectForm(selectresult.referenceinfo);
+			
+			// 모달 팝업
+			gfModalPop("#layer1");
+			
+		}
+		
+		callAjax("/tut/referenceselect.do", "post", "json", "true", param, selectcallback);
+		
+		
+	}; // fn_referencemodify, 학습자료 목록 detail
+	
+	/* 저장버튼 클릭시 등록,수정 */
+	function fn_savereference(){
+		
+		  if(!fn_Validateitem()){
+			return;
+		  }
+		
+	      var frm = document.getElementById("myForm");
+	      
+	      frm.enctype = 'multipart/form-data';
+	      
+	      var dataWithFile = new FormData(frm);
+	      dataWithFile.append("lsearcharea", lsearcharea.);
+	      
+	      
+	      var saveempdvcallback = function(savereturn){
+	    	  
+	         console.log("saveempdvcallback: ", JSON.stringify(savereturn)); 
+	         
+	         alert("저장 되었습니다.");
+	         
+	         gfCloseModal();
+	         
+	         fn_referenceselectlist();
+	         
+	      }
+	      
+	      callAjaxFileUploadSetFormData("/tut/savereference.do", "post", "json", true, dataWithFile, saveempdvcallback);
+	      
+	}
+	
+	 /* function fn_savereference(){
+		
+		  var param = {
+				  
+				  	lecture_seq : layer1.lecture_seq,
+					reference_no : layer1.reference_no,
+					reference_title : layer1.reference_title,
+					reference_content : layer1.reference_content,
+					reference_file : layer1.reference_file,
+					action : layer1.action,
+		  }
+	      
+	      var saveempdvcallback = function(savereturn){
+	    	  
+	         console.log("saveempdvcallback: ", JSON.stringify(savereturn)); 
+	         
+	         alert("저장 되었습니다.");
+	         
+	         gfCloseModal();
+	         
+	         fn_referenceselectlist();
+	         
+	      }
+	      
+	      callAjaxFileUploadSetFormData("/tut/savereference.do", "post", "json", true, param, saveempdvcallback);
+	      
+	} */
+	
+	/** 그룹코드 저장 validation */
+	function fn_Validateitem() {
+
+		var chk = checkNotEmpty(
+				[
+						[ "reference_title", "제목을 입력해주세요." ]
+					,	[ "reference_content", "내용을 입력해주세요." ]
+				]
+		);
+
+		if (!chk) {
+			return;
+		}
+
+		return true;
+	}
 	
 </script>
 
@@ -96,16 +430,16 @@
 								<a href="../tut/studyReference.do" class="btn_set refresh">새로고침</a>
 						</p>
 
-						<p class="conTitle">
+						<p class="conTitle" id="lsearcharea">
 							<span>학습자료</span> <span class="fr">
-								<select name="lecturename" id="lecturename" style="width: 150px;"></select>
+								<select name="lecturename" id="lecturename" v-model="lecturename" style="width: 150px;"></select>
 							    
 								강의명                   
 			                    <a href="" class="btnType blue" id="btnSearchreference" name="btn"><span>검  색</span></a>
 							</span>
 						</p>
 						
-						<div class="lectureReferenceList">
+						<div id="llistarea">
 							
 							<table class="col">
 								<caption>caption</caption>
@@ -124,17 +458,39 @@
 										<th scope="col">비고</th>
 									</tr>
 								</thead>
-								<tbody id="Reference"></tbody>
+								
+								<template v-if="totalcnt == 0">
+									<tbody>
+										<tr>
+											<td colspan=4> 조회된 데이터가 없습니다. </td>
+										</tr>
+									</tbody>
+								</template>
+								<template v-else>
+									<tbody v-for=" (item, index) in listitem">
+										<tr>
+											<td>{{ item.lecture_name }}</td>
+											<td>{{ item.lecture_start }}</td>
+											<td>{{ item.lecture_end }}</td>
+											<td>
+												<a href="" @click.prevent="fn_referenceselect(item.lecture_seq)">
+													<span>목록</span>
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</template>
+
 							</table>
+						<div class="paging_area"  id="referencePagination" v-html="pagenavi"> </div>
 						</div>
 	
-						<div class="paging_area"  id="referencePagination"> </div>
 						
 						<br/>
 						<br/>
 						
 						
-						<div class="ReferenceList">
+						<div id="cList">
 						
 						<p class="conTitle">
 							<span>학습자료 목록</span> <span class="fr">
@@ -160,7 +516,27 @@
 										<th scope="col">비고</th>
 									</tr>
 								</thead>
-								<tbody id="ReferenceList"></tbody>
+								<template v-if="totalcnt == 0">
+									<tbody>
+										<tr>
+											<td colspan=4> 조회된 데이터가 없습니다. </td>
+										</tr>
+									</tbody>
+								</template>
+								<template v-else>
+									<tbody v-for=" (item, index) in listitem">
+										<tr>
+											<td>{{ item.reference_title }}</td>
+											<td>{{ item.reference_date }}</td>
+											<td>자료명</td>
+											<td>
+												<a href="" @click.prevent="fn_referencemodify(item.reference_no)">
+													<span>수정 / 삭제</span>
+												</a>
+											</td>
+										</tr>
+									</tbody>
+								</template>
 							</table>
 						</div>
 	
@@ -194,21 +570,21 @@
 
 					<tbody>
 						<tr>
-							<input type="hidden" class="inputTxt p100" name="lecture_seq" id="lecture_seq" readonly/>
-							<input type="hidden" class="inputTxt p100" name="reference_no" id="reference_no" readonly/>
+							<input type="hidden" class="inputTxt p100" name="lecture_seq" id="lecture_seq" v-model="lecture_seq" readonly/>
+							<input type="hidden" class="inputTxt p100" name="reference_no" id="reference_no" v-model="reference_no" readonly/>
 						</tr>
 						<tr>
 							<th scope="row">제목 <span class="font_red">*</span></th>
-							<td colspan=4><input type="text" class="inputTxt p100" name="reference_title" id="reference_title" /></td>
+							<td colspan=4><input type="text" class="inputTxt p100" name="reference_title" id="reference_title" v-model="reference_title" /></td>
 						</tr>
 						<tr>
 							<th scope="row">내용 <span class="font_red">*</span></th>
-							<td colspan=4><textarea class="inputTxt p100" name="reference_content" id="reference_content"></textarea></td>
+							<td colspan=4><textarea class="inputTxt p100" name="reference_content" id="reference_content" v-model="reference_content" ></textarea></td>
 						</tr>
 				
 						<tr>
 							<th scope="row">학습자료 </th>
-							<td><input type="file" class="inputTxt p100" name="reference_file" id="reference_file" /></td>
+							<td><input type="file" class="inputTxt p100" name="reference_file" id="reference_file" v-model="reference_file" /></td>
 							<td colspan=2><div id="fileinfo"></div></td>
 						</tr>
 					</tbody>

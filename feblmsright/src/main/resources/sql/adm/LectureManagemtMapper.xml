@@ -36,7 +36,7 @@
 				</if> 
 				
 				<if test="(searchWord != null) and (!searchWord.equals(''))">
-				      and lecture_total <![CDATA[>=]]> #{searchWord}      	
+				      and cast(lecture_total as unsigned) <![CDATA[>=]]>  cast(#{searchWord} as unsigned)         	
 				</if>
 				
 	  </where>
@@ -62,8 +62,8 @@
 				</if> 
 				
 				<if test="(searchWord != null) and (!searchWord.equals(''))">
-				      and lecture_total <![CDATA[>=]]> #{searchWord}      	
-				</if>	
+				      and cast(lecture_total as unsigned) <![CDATA[>=]]>  cast(#{searchWord} as unsigned)         	
+				</if>
 	  </where> 
    </select>
    

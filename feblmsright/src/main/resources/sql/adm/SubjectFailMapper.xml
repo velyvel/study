@@ -3,7 +3,7 @@
 <mapper namespace="kr.happyjob.study.adm.dao.SubjectFailDao">
 
 	<!-- 강의가 종료된 리스트 불러오기 -->
-	<select id = "getSubjectFailList" parameterType = "java.util.Map" resultType = "kr.happyjob.study.adm.model.SubjectFailModel">
+	<select id = "getSubjectFailList" resultType = "kr.happyjob.study.adm.model.SubjectFailModel">
 		SELECT  LE.lecture_seq AS 'LECTURESEQ', 
 				DC.detail_name AS 'LECTURENAME', 
 				LE.lecture_total AS 'LECTURETOTAL', 
@@ -11,16 +11,16 @@
 				LE.lecture_end AS 'LECTUREEND', 
 				DATEDIFF(LE.lecture_end, LE.lecture_start) + 1 as 'DAYS'
 		FROM    tb_lecture LE INNER JOIN tb_detail_code DC ON DC.group_code = 'lecture_no' AND LE.lecture_no = DC.detail_code 
-		<where>
-			AND LE.lecture_confirm = "Y"
-			<if test="!lectureName.equals('') and lectureName != null">
+	   WHERE LE.lecture_confirm = "Y"
+			<if test="(!lectureName.equals('')) and (lectureName != null)">
 				AND DC.detail_name LIKE CONCAT("%", #{lectureName}, "%") 
-			</if>
-			<if test="!lectureStart.equals('') and !lectureEnd.equals('')">
-				AND (LE.lecture_start BETWEEN #{lectureStart} AND #{lectureEnd}
-				OR LE.lecture_end BETWEEN #{lectureStart} AND #{lectureEnd})
-			</if>
-		</where>
+			</if>			
+			<if test="(!lectureStart.equals('')) and (lectureStart != null)">
+				AND LE.lecture_start <![CDATA[>=]]>  #{lectureStart}
+			</if>			
+			<if test="(!lectureEnd.equals('')) and (lectureEnd != null)">
+				AND LE.lecture_end <![CDATA[<=]]>  #{lectureEnd}
+			</if>			
 		LIMIT #{startPage}, #{endPage}
 	</select>
 	
@@ -28,16 +28,16 @@
 	<select id = "getSubjectFailTotal" parameterType = "java.util.Map" resultType = "int">
 		SELECT  COUNT(*)
 		FROM    tb_lecture LE INNER JOIN tb_detail_code DC ON DC.group_code = 'lecture_no' AND LE.lecture_no = DC.detail_code 
-		<where>
-			AND LE.lecture_confirm = "Y"
+		WHERE LE.lecture_confirm = "Y"
 			<if test="!lectureName.equals('') and lectureName != null">
 				AND DC.detail_name LIKE CONCAT("%", #{lectureName}, "%") 
 			</if>
-			<if test="!lectureStart.equals('') and !lectureEnd.equals('')">
-				AND (LE.lecture_start BETWEEN #{lectureStart} AND #{lectureEnd}
-				OR LE.lecture_end BETWEEN #{lectureStart} AND #{lectureEnd})
+			<if test="(!lectureStart.equals('')) and (lectureStart != null)">
+				AND LE.lecture_start <![CDATA[>=]]>  #{lectureStart}
+			</if>			
+			<if test="(!lectureEnd.equals('')) and (lectureEnd != null)">
+				AND LE.lecture_end <![CDATA[<=]]>  #{lectureEnd}
 			</if>
-		</where>
 	</select>
 	
 	<!-- 특정 과목의 과락 및 통과 인원 불러오기 -->

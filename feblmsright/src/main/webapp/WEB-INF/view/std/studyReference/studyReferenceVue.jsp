@@ -32,6 +32,16 @@
 		fRegisterButtonClickEvent();
 	});
 	
+	console.log("selectComCombo : "+JSON.stringify(selectComCombo));  ////
+	
+	// 버튼 이벤트 등록
+	fRegisterButtonClickEvent();   ////
+	
+	init();  /////
+	
+	lectureList();  //강의목록
+	
+	
 
 	/** 버튼 이벤트 등록 */
 	function fRegisterButtonClickEvent() {

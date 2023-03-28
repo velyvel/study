@@ -65,8 +65,7 @@ function lectureListSearch(pagenum) {
 		var param = {
 				pagenum : pagenum,
 				pageSize : pageSizeLecture,
-				lectureName : $("#lectureName").val(),
-				searchWord : $("#searchWord").val()
+				lectureName : $("#lectureName").val()
 		};
 		
 		var listcallback = function(returndata) {
@@ -262,9 +261,6 @@ function lectureListSearch(pagenum) {
 						<p class="conTitle">
 							<span>강의목록</span> <span class="fr"> 
 							    <select name="lectureName" id="lectureName" style="width: 150px;"></select>
-							    
-								마감인원	
-		     	                <input type="text" style="width: 300px; height: 25px;" id="searchWord" name="searchWord">                    
 			                    <a href="" class="btnType blue" id="btnSearchLecture" name="btn"><span>검  색</span></a>
 							</span>
 						</p>

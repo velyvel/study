@@ -18,7 +18,7 @@
        	    inner join tb_userinfo ui ON ui.loginID = lc.loginID
   	   <where>
     		<if test="(lname != null) and (!lname.equals(''))">
-    			and lecture_name like concat('%' #{lname}, '%')
+    			and dc.detail_name like concat('%' #{lname}, '%')
     		</if>
     	</where>
 		ORDER BY num, lc.lecture_no asc
@@ -32,6 +32,11 @@
   		from tb_lecture lc 
   			inner join tb_detail_code dc on dc.group_code='lecture_no' and dc.detail_code = lc.lecture_no
        	    inner join tb_userinfo ui ON ui.loginID = lc.loginID
+       	<where>
+    		<if test="(lname != null) and (!lname.equals(''))">
+    			and dc.detail_name like concat('%' #{lname}, '%')
+    		</if>
+    	</where>
 	</select>
 	
 	<!-- 학생관리 학생 목록 조회 -->
@@ -64,7 +69,12 @@
     		inner join tb_lecture lc ON lc.lecture_seq = st.lecture_seq
     		inner join tb_userinfo ui ON ui.loginID = st.loginID
     		inner join tb_detail_code dc on dc.group_code='lecture_no' and dc.detail_code = lc.lecture_no
-    	where st.lecture_seq = #{lecSeq}
+    	<where>
+    		<if test="(sname != null) and (!sname.equals(''))">
+    			and name like concat('%' #{sname}, '%')
+    		</if>
+    		and st.lecture_seq = #{lecSeq}
+    	</where>
 	</select>
 	
 	<!-- 학생 상세조회 -->

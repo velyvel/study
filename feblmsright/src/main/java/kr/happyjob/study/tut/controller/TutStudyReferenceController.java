@@ -102,6 +102,38 @@ public class TutStudyReferenceController {
 	}
 	
 	/**
+	 * 강의 목록 조회 Vue
+	 */
+	@RequestMapping("vueLectureList.do")
+	@ResponseBody
+	public Map<String, Object> vueLectureList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".vueLectureList");
+		logger.info("   - paramMap : " + paramMap);
+		
+		paramMap.put("loginID", session.getAttribute("loginId"));
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		int pagenum =Integer.parseInt(String.valueOf(paramMap.get("pagenum")));
+		int pageSize =Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startnum = (pagenum - 1) * pageSize;
+
+		paramMap.put("startnum", startnum);
+		paramMap.put("pageSize", pageSize);
+		
+		List<TutStudyReferenceModel> LectureList = tutStudyReferenceService.LectureList(paramMap);
+		int totalcnt = tutStudyReferenceService.LectureListCnt(paramMap);
+		
+		returnmap.put("LectureList", LectureList);
+		returnmap.put("totalcnt", totalcnt);
+		
+		logger.info("+ End " + className + ".vueLectureList");
+
+		return returnmap;
+	}
+	
+	/**
 	 * 학습자료 목록 조회
 	 */
 	@RequestMapping("referenceselectlist.do")
@@ -132,7 +164,40 @@ public class TutStudyReferenceController {
 	}
 	
 	/**
-	 * 학습자료 조회
+	 * 학습자료 목록 조회 Vue
+	 */
+	@RequestMapping("vuereferenceselectlist.do")
+	@ResponseBody
+	public Map<String, Object> vuereferenceselectlist(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".vuereferenceselectlist");
+		logger.info("   - paramMap : " + paramMap);
+		
+		paramMap.put("loginID", session.getAttribute("loginId"));
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		int pagenum =Integer.parseInt(String.valueOf(paramMap.get("pagenum")));
+		int pageSize =Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startnum = (pagenum - 1) * pageSize;
+
+		paramMap.put("startnum", startnum);
+		paramMap.put("pageSize", pageSize);
+		
+		List<TutStudyReferenceModel> referenceselectlist = tutStudyReferenceService.referenceselectlist(paramMap);
+		int totalcnt = tutStudyReferenceService.referenceselectlistCnt(paramMap);
+		
+		returnmap.put("referenceselectlist", referenceselectlist);
+		returnmap.put("totalcnt", totalcnt);
+		
+		logger.info("+ End " + className + ".vuereferenceselectlist");
+
+		return returnmap;
+	}
+	
+	/**
+	 * 학습자료 목록 detail
 	 */
 	@RequestMapping("referenceselect.do")
 	@ResponseBody
@@ -154,6 +219,8 @@ public class TutStudyReferenceController {
 
 		return returnmap;
 	}
+	
+	
 	
 	/**
 	 * 학습자료 저장, 수정, 삭제

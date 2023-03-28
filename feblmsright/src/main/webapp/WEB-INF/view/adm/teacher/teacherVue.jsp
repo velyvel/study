@@ -14,14 +14,6 @@
 <!-- sweet swal import -->
 
 <script type="text/javascript">
-
-	// 그룹코드 페이징 설정
-	var pageSize = 5;
-	var pageBlockSize = 5;
-	
-	// 상세코드 페이징 설정
-	var pageSizeComnDtlCod = 5;
-	var pageBlockSizeComnDtlCod = 10;
 	
 	// 검색영역
 	var searcharea; 
@@ -61,8 +53,8 @@
 					        	 listitem : [],
 					        	 totalcnt : 0,
 					        	 cpage : 0,
-					        	 pagesize : 5,
-                    	     	 blocksize : 10,
+					        	 pagesize : 10,
+                    	     	 blocksize : 2,
                     	       	 pagenavi : "",
 					        	 	
 					        	 
@@ -147,7 +139,7 @@
 			console.log("teacherListCallback : " +   JSON.stringify(data));
 			
 			listarea.listitem = data.teacherList;
-			listarea.totalcnt = data.totalcnt;
+			listarea.totalcnt = data.totalCnt;
 			
 			var paginationHtml = getPaginationHtml(pagenum, listarea.totalcnt, listarea.pagesize, listarea.blocksize , 'TeacherList');
 			listarea.pagenavi = paginationHtml;
@@ -161,14 +153,14 @@
 	
 	/* 승인 & 미승인 ( 유저타입 업데이트 ) */
 	function typesearch(loginid){
-		$("#loginID").val(loginid),
+		listarea.loginID = loginid,
 		typeUpdate();
 	}
 	
 	function typeUpdate(){
 		
 		var param = {
-				loginID : $("#loginID").val(),
+				loginID : listarea.loginID,
 				userType : 'B'
 		}
 		
@@ -196,14 +188,14 @@
 			
 			var teacherInfo = data.teacherInfo
 			
-			$("#tutId").empty().append(teacherInfo.loginID);
-			$("#tutName").empty().append(teacherInfo.name);
-			$("#tutRegdate").empty().append(teacherInfo.user_regdate);
-			$("#tutHp").empty().append(teacherInfo.user_hp);
-			$("#tutEmail").empty().append(teacherInfo.user_email);
-			$("#tutBirthday").empty().append(teacherInfo.user_birthday);
-			$("#tutAddress").empty().append(teacherInfo.user_address);
-			$("#tutLecture").empty().append(teacherInfo.lectureName);
+			tutInfoLayer.tutId = teacherInfo.loginID;
+			tutInfoLayer.tutName = teacherInfo.name;
+			tutInfoLayer.tutRegdate = teacherInfo.user_regdate;
+			tutInfoLayer.tutHp = teacherInfo.user_hp;
+			tutInfoLayer.tutEmail = teacherInfo.user_email;
+			tutInfoLayer.tutBirthday = teacherInfo.user_birthday;
+			tutInfoLayer.tutAddress = teacherInfo.user_address;
+			tutInfoLayer.tutLecture = teacherInfo.lectureName;
 			
 			gfModalPop("#tutInfoLayer");
 		}
@@ -287,8 +279,8 @@
 								</template>
 								<template v-else>
 									<tbody v-for=" (item,index)  in  listitem">
-									     <tr @click="tutInfo(item.loginID)"> 
-										   <td>{{item.name}}({{item.loginID}})</td>
+									     <tr > 
+										   <td @click="tutInfo(item.loginID)">{{item.name}}({{item.loginID}})</td>
 										   <td>{{item.user_hp}}</td>
 										   <td>{{item.user_email}}</td>
 										   <td>{{item.user_regdate}}</td>
@@ -338,27 +330,27 @@
 					<tbody>
 						<tr>
 							<th scope="row"> 아이디 </th>
-							 <td ><div id="tutId" v-model="tutId"></div></td>
+							 <td ><div id="tutId" v-html="tutId"></div></td>
 							<th scope="row"> 이름</th>
-							 <td colspan="3"><div id="tutName" v-model="tutName"></div></td>
+							 <td colspan="3"><div id="tutName" v-html="tutName"></div></td>
 						</tr>
 						<tr>
 							<th scope="row">연락처</th>
-							<td><div id="tutHp" v-model="tutHp"></div></td>
+							<td><div id="tutHp" v-html="tutHp"></div></td>
 							<th scope="row">이메일 </th>
-							<td ><div id="tutEmail" v-model="tutEmail"></div></td>
+							<td ><div id="tutEmail" v-html="tutEmail"></div></td>
 						</tr>
 						<tr>
 							<th scope="row">생년월일</th>
-							<td ><div id="tutBirthday" v-model="tutBirthday"></div></td>
+							<td ><div id="tutBirthday" v-html="tutBirthday"></div></td>
 							<th scope="row">주소 </th>
-							<td><div id="tutAddress" v-model="tutAddress"></div></td>
+							<td><div id="tutAddress" v-html="tutAddress"></div></td>
 						</tr>
 						<tr>
 						    <th scope="row"> 가입일 </th>
-							 <td><div id="tutRegdate" v-model="tutRegdate"></div></td>
+							 <td><div id="tutRegdate" v-html="tutRegdate"></div></td>
 							<th scope="row">진행 중인 수업</th>
-							 <td ><div id="tutLecture" v-model="tutLecture"></div></td>
+							 <td ><div id="tutLecture" v-html="tutLecture"></div></td>
 						</tr>
 						
 					</tbody>
