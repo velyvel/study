@@ -202,10 +202,9 @@
 			var planCallBack = function(lecturePlanListData){
 				console.log("강의계획서 목록 : " + JSON.stringify(lecturePlanListData));
 
-
 				lectureDetailArea .lecturePlanItem = lecturePlanListData.lecturePlanSelect;
 				lectureDetailArea .totalCnt = lecturePlanListData.totalcnt;
-
+				
 			};
 
 			callAjax("/std/showLecturePlan.do", "post" , "json", true, param, planCallBack)
@@ -421,9 +420,9 @@
 										<td></td>
 										<td></td>
 										<td></td>
-<%--										<td>{{lecturePlan.plan_week}}</td>--%>
-<%--										<td>{{lecturePlan.plan_goal}}</td>--%>
-<%--										<td>{{lecturePlan.plan_content}}</td>--%>
+										<td>{{lecturePlan.plan_week}}</td>
+										<td>{{lecturePlan.plan_goal}}</td>
+										<td>{{lecturePlan.plan_content}}</td>
 									</tr>
 									</tbody>
 

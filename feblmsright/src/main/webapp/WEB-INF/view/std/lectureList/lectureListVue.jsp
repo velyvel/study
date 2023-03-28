@@ -61,9 +61,9 @@
 					case 'btnSearchLecture':
 						lectureListSearch();
 						break;
-					case 'btnSaveLecture' :
-						studentInsert();
-						break;
+					// case 'btnSaveLecture' :
+					// 	studentInsert();
+					// 	break;
 					case 'btnCloseLecture' :
 						gfCloseModal();
 						break;
@@ -92,8 +92,8 @@
 					pageSize : 5,
 					blockSize : 5,
 					pageNav : "",
-					lectureSeq : ""
-
+					lectureSeq : "",
+					loginID : ""
 				},
 				method : {
 
@@ -116,6 +116,7 @@
 					action : "",
 					lecturePlanItem : [],
 					totalCnt : 0,
+					commit : false,
 				},
 				method : {
 
@@ -148,12 +149,12 @@
 
 				//TODO 데이터 없을때 페이지 만들지 않는 로직 추가
 
-				var paginationHtml = getPaginationHtml(pageNum, lectureListArea.totalcnt, lectureListArea.pageSize, lectureListArea.blockSize, 'showLectureList');
+				var paginationHtml = getPaginationHtml(pageNum, lectureListArea.totalCnt, lectureListArea.pageSize, lectureListArea.blockSize, 'showLectureList');
 
 				lectureListArea.pageNav = paginationHtml;
 
 				console.log(lectureListArea.listItem);
-				console.log(lectureListArea.totalcnt);
+				console.log(lectureListArea.totalCnt);
 			};
 
 			callAjax("/std/lectureListSearchVue.do", "post" , "json", "false", param, listCallBack);
@@ -161,10 +162,11 @@
 
 
 		//TODO 데이터 한건씩 조회하기
-		function showLectureDetail(lectureSeq){
-			console.log("강의번호 : " + lectureSeq);
+		function showLectureDetail(lectureSeq, loginId){
+			//console.log("강의번호 : " + lectureSeq);
 
 			lectureListArea.lectureSeq = lectureSeq;
+			lectureListArea.loginID = loginId;
 
 			var param = {
 				lectureSeq : lectureSeq,
@@ -173,9 +175,12 @@
 			var resultCallBack = function (lectureSeq) {
 				console.log("선택항목 데이터 : " + JSON.stringify(lectureSeq));
 
+				//TODO 취소버튼 만드려면 lectureSeq에  cnt가 1이여야 함, 찾음
+				console.log("취소버튼 cnt값만 읽어오기 " + lectureSeq.lectureSelect.cnt);
+
+
 				functionInitForm(lectureSeq.lectureSelect);
 				gfModalPop("#lectureDetailArea");
-
 			};
 			callAjax("/std/lectureSelect.do", "post" , "json", true, param, resultCallBack)
 		}
@@ -191,6 +196,12 @@
 			lectureDetailArea.roomNameDiv = data.room_name;
 			lectureDetailArea.lecturePlanDiv = data.lecture_plan;
 
+			if(data.cnt == 0){
+				lectureDetailArea.commit = true;
+			}else{
+				lectureDetailArea.commit = false;
+			}
+
 			showLecturePlan();
 		}
 
@@ -203,32 +214,43 @@
 				console.log("강의계획서 목록 : " + JSON.stringify(lecturePlanListData));
 
 
-				lectureDetailArea .lecturePlanItem = lecturePlanListData.lecturePlanSelect;
-				lectureDetailArea .totalCnt = lecturePlanListData.totalcnt;
+				lectureDetailArea.lecturePlanItem = lecturePlanListData.lecturePlanSelect;
+				lectureDetailArea.totalCnt = lecturePlanListData.totalcnt;
 
 			};
 
 			callAjax("/std/showLecturePlan.do", "post" , "json", true, param, planCallBack)
 		}
 
+		function insertStudent(){
 
-		//TODO
-		function studentInsert(){
+			//TODO : 수강신청 완료 alert띄우고 모달닫기
 
-			console.log( "============신청 데이터 입니다 ======================" + lectureListArea.lectureSeq);
 
-			var action = lectureDetailArea.action;
 			var param = {
 				action : "I",
-				lectureSeq : "",//불러오기;
+				lectureSeq : lectureListArea.lectureSeq,
+				loginId : lectureListArea.loginID,
 			}
+			var insertCallBack = function(studentData){
+				console.log("값 바꾸기 : " +JSON.stringify(studentData));
+
+				if(studentData.result == "INSERT"){
+					alert("저장 되었습니다.");
+
+					gfCloseModal();
+
+					showLectureList();
+
+				}else{
+					alert("실패 되었습니다.");
+					return false;
+				}
+			};
+
+			callAjax("/std/studentInsert.do", "post", "json", true, param, insertCallBack);
+
 		}
-
-		//TODO 검색 다시한번
-
-
-
-
 
 	</script>
 
@@ -316,7 +338,7 @@
 
 								<template  v-else>
 									<tbody v-for="(item, index) in listItem">
-									<tr @click="showLectureDetail(item.lecture_seq)">
+									<tr @click="showLectureDetail(item.lecture_seq, item.loginID)">
 										<%--	TODO : JSON으로 불러온 데이터 한세트 : {"lecture_seq":10,"lecture_no":5,"loginID":"teacher","test_no":0,"lecture_name":"C언어","room_name":"1001호","lecture_person":"1","lecture_total":"10","lecture_goal":"ㅁ","lecture_start":"2023-03-20","lecture_end":"2023-03-24","lecture_confirm":"N","teacher_name":"강사","lecture_plan":null,"plan_week":null,"plan_goal":null,"plan_content":null,"cnt":0,"today":null},										--%>
 										<td>{{item.teacher_name}}</td>
 										<td>{{item.lecture_name}}</td>
@@ -410,24 +432,22 @@
 									<th scope="col">학습내용</th>
 								</tr>
 								</thead>
-<%--								TODO 강의계획서 불러오기									--%>
-<%--								<template v-if="totalcnt ==0">--%>
-<%--									<tr>--%>
-<%--										<td colspan="5"> 강의 선택해라. </td>--%>
-<%--									</tr>--%>
-<%--								</template>--%>
+								<template v-if="totalCnt == 0">
+									<tbody>
+										<tr>
+											<td colspan="3">조회된 데이터 없당</td>
+										</tr>
+									</tbody>
+								</template>
+								<template v-else>
 									<tbody id="listPlan" v-for="(lecturePlan, index) in lecturePlanItem">
 									<tr>
-										<td></td>
-										<td></td>
-										<td></td>
-<%--										<td>{{lecturePlan.plan_week}}</td>--%>
-<%--										<td>{{lecturePlan.plan_goal}}</td>--%>
-<%--										<td>{{lecturePlan.plan_content}}</td>--%>
+										<td>{{lecturePlan.plan_week}}</td>
+										<td>{{lecturePlan.plan_goal}}</td>
+										<td>{{lecturePlan.plan_content}}</td>
 									</tr>
 									</tbody>
-
-
+								</template>
 							</table>
 						</div>
 						</td>
@@ -438,7 +458,7 @@
 				<!-- e : 여기에 내용입력 -->
 
 				<div class="btn_areaC mt30">
-					<a href="" class="btnType blue" id="btnSaveLecture" name="btn"><span>신청</span></a>
+					<a href="" class="btnType blue" id="btnSaveLecture" name="btn" v-show="commit"><span @click="insertStudent">신청</span></a>
 					<a href=""	class="btnType gray"  id="btnCloseLecture" name="btn"><span>취소</span></a>
 				</div>
 			</dd>
