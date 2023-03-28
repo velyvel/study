@@ -55,7 +55,7 @@ public class TaskSendController {
 		return "std/taskSend/taskSend";
 	}
 	
-	/**  과제 제출 초기화면 */
+	/**  과제 제출 초기화면 Vue*/
 	@RequestMapping("taskSendVue.do")
 	public String taskSendVue(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
 			HttpServletResponse response, HttpSession session) throws Exception {
@@ -97,7 +97,43 @@ public class TaskSendController {
 			return "std/taskSend/lectureList";
   	  
     }
-    
+
+    /**
+	 * 수강내역 리스트 vue */
+	@RequestMapping("courseListVue.do")
+	@ResponseBody
+	public Map<String, Object> courseListVue(Model model,  @RequestParam Map<String, Object> paramMap,
+							  HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception{
+
+
+		logger.info("========= Start  " + className + ".courselListVue" + "=========");
+		logger.info("   - paramMap : " + paramMap);
+
+		Map<String, Object> returnMap = new HashMap<String, Object>();
+
+		int pageNum = Integer.parseInt( String.valueOf( paramMap.get("pageNum") ) );
+		int  pageSize = Integer.parseInt ( String.valueOf ( paramMap.get("pageSize") ) );
+		int startNum =  (pageNum - 1) * pageSize;
+
+		paramMap.put("startNum", startNum);
+		paramMap.put("pageSize", pageSize);
+		paramMap.put("loginid", session.getAttribute("loginId"));
+
+		List <CourseInfoModel> lectureList = taskSendService.lectureList(paramMap, session);
+		int totalCnt = taskSendService.lectureListCnt(paramMap);
+
+		//model.addAttribute("lectureList", lectureList);
+		//model.addAttribute("totalCnt",totalCnt);
+
+		returnMap.put("lectureList", lectureList);
+		returnMap.put("totalCnt", totalCnt);
+
+		logger.info("========= End " + className + ".courselList" +  "=========");
+
+		return returnMap;
+
+	}
+
     /* 주차별 과제 목록 */
     @RequestMapping("taskList.do")
     public String taskList(Model model,  @RequestParam Map<String, Object> paramMap,
@@ -106,7 +142,7 @@ public class TaskSendController {
   	    logger.info("========= Start  " + className + ".taskList" + "=========");
 			logger.info("   - paramMap : " + paramMap);
 		    int pageNum = Integer.parseInt( String.valueOf( paramMap.get("pageNum") ) ); 
-		    int  pageSize = Integer.parseInt ( String.valueOf ( paramMap.get("pageSize") ) );
+		    int pageSize = Integer.parseInt ( String.valueOf ( paramMap.get("pageSize") ) );
 		    int startNum =  (pageNum - 1) * pageSize;
 			
 		     paramMap.put("startNum", startNum);
@@ -123,6 +159,40 @@ public class TaskSendController {
 			return "std/taskSend/taskList";
   	  
     }
+
+    /**
+	 * 과제 목록 조회 vue */
+	@RequestMapping("taskListVue.do")
+	@ResponseBody
+	public Map taskListVue(Model model,  @RequestParam Map<String, Object> paramMap,
+						   HttpServletRequest request, HttpServletResponse response) throws Exception{
+
+		logger.info("========= Start  " + className + ".taskList" + "=========");
+		logger.info("   - paramMap : " + paramMap);
+
+		Map<String, Object> returnMap = new HashMap<String, Object>();
+
+		int pageNum = Integer.parseInt( String.valueOf( paramMap.get("pageNum") ) );
+		int  pageSize = Integer.parseInt ( String.valueOf ( paramMap.get("pageSize") ) );
+		int startNum =  (pageNum - 1) * pageSize;
+
+		paramMap.put("startNum", startNum);
+		paramMap.put("pageSize", pageSize);
+
+		List <TaskListModel> taskList = taskSendService.taskList(paramMap);
+		int totalCnt = taskSendService.taskListCnt(paramMap);
+
+		//model.addAttribute("taskList", taskList);
+		//model.addAttribute("totalCnt",totalCnt);
+
+		returnMap.put("taskList", taskList);
+		returnMap.put("totalCnt", totalCnt);
+
+		logger.info("========= End " + className + ".taskList" +  "=========");
+
+		return returnMap;
+
+	}
     
 	/* 과제 내용 조회 */
     @RequestMapping("taskContent.do")
@@ -207,7 +277,8 @@ public class TaskSendController {
     	  
     	  String action = String.valueOf(paramMap.get("action"));
     	  paramMap.put("loginId", session.getAttribute("loginId"));
-    	  
+		  System.out.println(paramMap.get("loginId"));
+
     	  if("I".equals(action)){
     		  taskSendService.taskInsert(paramMap, session, request);
     	  }else if("U".equals(action)){

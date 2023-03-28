@@ -7,7 +7,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-	<title>LmsRight : 강의 목록</title>
+	<title>뷰 강의목록</title>
 	<!-- sweet alert import -->
 	<script src='${CTX_PATH}/js/sweetalert/sweetalert.min.js'></script>
 	<jsp:include page="/WEB-INF/view/common/common_include.jsp"></jsp:include>
@@ -31,6 +31,8 @@
 		var lectureListArea;
 		//강의 상세보기(모달창)
 		var lectureDetailArea;
+		//강의계획서 조회하기(모달창 안에)
+		var lecturePlanArea;
 
 
 
@@ -90,6 +92,7 @@
 					pageSize : 5,
 					blockSize : 5,
 					pageNav : "",
+					lectureSeq : ""
 
 				},
 				method : {
@@ -110,7 +113,9 @@
 					lectureGoalDiv : "",
 					roomNameDiv : "",
 					lecturePlanDiv : "",
-					action : ""
+					action : "",
+					lecturePlanItem : [],
+					totalCnt : 0,
 				},
 				method : {
 
@@ -142,9 +147,6 @@
 				lectureListArea.totalCnt = listData.totalcnt;
 
 				//TODO 데이터 없을때 페이지 만들지 않는 로직 추가
-				// if(dataValues>5){
-				//
-				// }
 
 				var paginationHtml = getPaginationHtml(pageNum, lectureListArea.totalcnt, lectureListArea.pageSize, lectureListArea.blockSize, 'showLectureList');
 
@@ -161,7 +163,8 @@
 		//TODO 데이터 한건씩 조회하기
 		function showLectureDetail(lectureSeq){
 			console.log("강의번호 : " + lectureSeq);
-			//gfModalPop("#lectureDetailArea");
+
+			lectureListArea.lectureSeq = lectureSeq;
 
 			var param = {
 				lectureSeq : lectureSeq,
@@ -170,20 +173,46 @@
 			var resultCallBack = function (lectureSeq) {
 				console.log("선택항목 데이터 : " + JSON.stringify(lectureSeq));
 
-				functionInitForm(lectureSeq.lectureInfo);
+				functionInitForm(lectureSeq.lectureSelect);
 				gfModalPop("#lectureDetailArea");
 
 			};
 			callAjax("/std/lectureSelect.do", "post" , "json", true, param, resultCallBack)
 		}
 
-		function functionInitForm(lectureSeq){
+		function functionInitForm(data){
+			lectureDetailArea.lectureNameDiv = data.lecture_name;
+			lectureDetailArea.teacherNameDiv = data.teacher_name;
+			lectureDetailArea.lectureStartDiv = data.lecture_start;
+			lectureDetailArea.lectureEndDiv= data.lecture_end;
+			lectureDetailArea.lecturePersonDiv= data.lecture_person;
+			lectureDetailArea.lectureTotalDiv = data.lecture_total;
+			lectureDetailArea.lectureGoalDiv = data.lecture_goal;
+			lectureDetailArea.roomNameDiv = data.room_name;
+			lectureDetailArea.lecturePlanDiv = data.lecture_plan;
 
-			//TODO 데이터 콘솔창에 찍히는데 불러오기 질문
-			lectureDetailArea.lectureNameDiv = lectureSeq;
-
+			showLecturePlan();
 		}
 
+		function showLecturePlan(){
+			var param = {
+				lectureSeq : lectureListArea.lectureSeq,
+			}
+
+			var planCallBack = function(lecturePlanListData){
+				console.log("강의계획서 목록 : " + JSON.stringify(lecturePlanListData));
+
+
+				lectureDetailArea .lecturePlanItem = lecturePlanListData.lecturePlanSelect;
+				lectureDetailArea .totalCnt = lecturePlanListData.totalcnt;
+
+			};
+
+			callAjax("/std/showLecturePlan.do", "post" , "json", true, param, planCallBack)
+		}
+
+
+		//TODO
 		function studentInsert(){
 
 			console.log( "============신청 데이터 입니다 ======================" + lectureListArea.lectureSeq);
@@ -191,8 +220,11 @@
 			var action = lectureDetailArea.action;
 			var param = {
 				action : "I",
+				lectureSeq : "",//불러오기;
 			}
 		}
+
+		//TODO 검색 다시한번
 
 
 
@@ -336,31 +368,32 @@
 					<tbody>
 					<tr>
 						<th scope="row">과목 </th>
-						<td><div id="lectureNameDiv" v-model="lectureNameDiv">  </div></td>
+						<td><div id="lectureNameDiv" v-html="lectureNameDiv"></div></td>
 						<th scope="row">강사명 </th>
-						<td><div id="teacherNameDiv" v-model="teacherNameDiv">  </div></td>
+						<td><div id="teacherNameDiv" v-html="teacherNameDiv">  </div></td>
 					</tr>
 					<tr>
 						<th scope="row">강의 시작일 </th>
-						<td><div id="lectureStartDiv" v-model="lectureStartDiv">  </div></td>
+						<td><div id="lectureStartDiv" v-html="lectureStartDiv">  </div></td>
 						<th scope="row">강의 마감일 </th>
-						<td><div id="lectureEndDiv" v-model="lectureEndDiv">  </div></td>
+						<td><div id="lectureEndDiv" v-html="lectureEndDiv">  </div></td>
 					</tr>
 					<tr>
 						<th scope="row">모집인원 </th>
-						<td><div id="lecturePersonDiv" v-model="lecturePersonDiv">  </div></td>
+						<td><div id="lecturePersonDiv" v-html="lecturePersonDiv">  </div></td>
 						<th scope="row">마감인원 </th>
-						<td><div id="lectureTotalDiv" v-model="lectureTotalDiv">  </div></td>
+						<td><div id="lectureTotalDiv" v-html="lectureTotalDiv">  </div></td>
 					</tr>
 					<tr>
 						<th scope="row">수업목표</th>
-						<td><div id="lectureGoalDiv" v-model="lectureGoalDiv">  </div></td>
+						<td><div id="lectureGoalDiv" v-html="lectureGoalDiv">  </div></td>
 						<th scope="row">강의실</th>
-						<td><div id="roomNameDiv" v-model="roomNameDiv">  </div></td>
+						<td><div id="roomNameDiv" v-html="roomNameDiv">  </div></td>
 					</tr>
 					<tr>
 						<th scope="row">강의계획</th>
-						<td colspan="3"><div id="lecturePlanDiv" v-model="lecturePlanDiv">
+						<td colspan="3">
+					<div id="lecturePlanArea" v-model="lecturePlanArea">
 
 							<table class="col">
 								<caption>caption</caption>
@@ -377,7 +410,24 @@
 									<th scope="col">학습내용</th>
 								</tr>
 								</thead>
-								<tbody id="listPlan"></tbody>
+<%--								TODO 강의계획서 불러오기									--%>
+<%--								<template v-if="totalcnt ==0">--%>
+<%--									<tr>--%>
+<%--										<td colspan="5"> 강의 선택해라. </td>--%>
+<%--									</tr>--%>
+<%--								</template>--%>
+									<tbody id="listPlan" v-for="(lecturePlan, index) in lecturePlanItem">
+									<tr>
+										<td></td>
+										<td></td>
+										<td></td>
+<%--										<td>{{lecturePlan.plan_week}}</td>--%>
+<%--										<td>{{lecturePlan.plan_goal}}</td>--%>
+<%--										<td>{{lecturePlan.plan_content}}</td>--%>
+									</tr>
+									</tbody>
+
+
 							</table>
 						</div>
 						</td>

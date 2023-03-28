@@ -145,8 +145,36 @@ public class LectureListController {
 
 		return "std/lectureList/lectureSelect";
 	}
-	
-	
+
+	/**
+	 * vue 강의계획서 조회하기 */
+	@RequestMapping("showLecturePlan.do")
+	@ResponseBody
+	public Map<String, Object> lecturePlanSelectVue(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+									HttpServletResponse response, HttpSession session) throws Exception {
+
+		logger.info("+ Start " + className + ".lectureListSearch");
+		logger.info("   - paramMap : " + paramMap);
+
+		Map<String, Object> returnMap = new HashMap<String, Object>();
+
+		List<LectureListModel> lecturePlanSelect = lecturelistService.lecturePlanSelect(paramMap);
+		int totalcnt = lecturelistService.lecturePlanCnt(paramMap);
+		//paramMap.put("totalcnt" , totalcnt);
+
+		//model.addAttribute("lecturePlanSelect", lecturePlanSelect);
+		//model.addAttribute("totalcnt", totalcnt);
+
+		returnMap.put("lecturePlanSelect", lecturePlanSelect);
+		returnMap.put("totalcnt", totalcnt);
+
+		logger.info("+ End " + className + ".lecturePlanSelect");
+
+		return returnMap;
+	}
+
+
+
 	//list 한건 조회
 	
 	@RequestMapping("lectureSelect.do")
