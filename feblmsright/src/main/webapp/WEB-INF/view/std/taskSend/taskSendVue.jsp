@@ -1,242 +1,315 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-		 pageEncoding="UTF-8"%>
+	pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-	<title>뷰 강의목록</title>
-	<!-- sweet alert import -->
-	<script src='${CTX_PATH}/js/sweetalert/sweetalert.min.js'></script>
-	<jsp:include page="/WEB-INF/view/common/common_include.jsp"></jsp:include>
-	<!-- sweet swal import -->
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>뷰 과제제출</title>
+<!-- sweet alert import -->
+<script src='${CTX_PATH}/js/sweetalert/sweetalert.min.js'></script>
+<jsp:include page="/WEB-INF/view/common/common_include.jsp"></jsp:include>
+<!-- sweet swal import -->
 
-	<script type="text/javascript">
+<script type="text/javascript">
 
-		// 그룹코드 페이징 설정
-		var pageSizeLecture = 5;
-		var pageBlockSizeLecture = 5;
+	//  페이징 설정
+	var pageSize= 5;
+	var pageBlockSize= 5;
 
-		// 상세코드 페이징 설정
-		var pageSizeComnDtlCod = 5;
-		var pageBlockSizeComnDtlCod = 10;
+	//TODO
+	/** 변수 추가 설정, 각 변수는 주석처리하여 정의함 */
+	var lectureHeaderArea;
+	var lectureListArea;
+	var sendListArea;
+	var taskContentLayer;
+	var taskSendLayer;
+	var findId;
+	
+	
+	/** OnLoad event */ 
+	$(function() {
+		
+		selectComCombo("lecbyuser", "lecbyuserall", "all", "");
+		init();
+		showLectureList();
+		
+		// 버튼 이벤트 등록
+		fRegisterButtonClickEvent();
+	});
+	
 
-		//TODO
-		/** 변수 추가 선언, 각 변수는 주석처리해 정의함*/
-				// 강의목록~검색까지 있는 div 정의함. 코드라인:
-		var headerArea;
-		//테이블, 실제로 리스트 나오는 곳 정의함. 코드라인:
-		var lectureListArea;
-		//강의 상세보기(모달창)
-		var lectureDetailArea;
-		//강의계획서 조회하기(모달창 안에)
-		var lecturePlanArea;
+	/** 버튼 이벤트 등록 */
+	function fRegisterButtonClickEvent() {
+		$('a[name=btn]').click(function(e) {
+			e.preventDefault();
 
+			var btnId = $(this).attr('id');
 
+			switch (btnId) {
+				case 'btnSaveTask' :
+					fn_saveTask();
+					break;
+				case 'btnDeleteGrpCod' :
+					fDeleteGrpCod();
+					break;
+				case 'btnSearch' :
+					lectureList();
+					break;
+				case 'btnDeleteDtlCod' :
+					fDeleteDtlCod();
+					break;
+				case 'btnUpdateTask':
+					fn_saveTask();
+					break;
+				case 'btnCloseGrpCod' :
+				case 'btnCloseDtlCod' :
+					gfCloseModal();
+					break;
+			}
+		});
+	}
 
-		/** OnLoad event */
-		$(function() {
-			comcombo("lecture_no", "lectureName", "all", "");
-			//TODO
-			// 함수 정의란, new vue
-			init();
-
-			showLectureList();
-
-			// 버튼 이벤트 등록
-			fRegisterButtonClickEvent();
+	function init(){
+		findId = new Vue({
+			el: "#findId",
+			data :{
+				loginId : "${loginId}",
+			}
 		});
 
-
-		/** 버튼 이벤트 등록 */
-		function fRegisterButtonClickEvent() {
-			$('a[name=btn]').click(function(e) {
-				e.preventDefault();
-
-				var btnId = $(this).attr('id');
-
-				switch (btnId) {
-					case 'btnSearchLecture':
-						lectureListSearch();
-						break;
-					case 'btnSaveLecture' :
-						studentInsert();
-						break;
-					case 'btnCloseLecture' :
-						gfCloseModal();
-						break;
-				}
-			});
-		}
-
-		function init(){
-			headerArea = new Vue({
-				el: "#headerArea",
-				data : {
-					//lectureName: selectbox id 값
-					lectureName : "",
-					//검색창 id값
-					searchWord : "",
-				}
-			});
-
-			lectureListArea = new Vue({
-				el: "#lectureListArea",
-				data : {
-					//tr 안에 데이터들
-					listItem : [],
-					totalCnt : 0,
-					currentPage : 0,
-					pageSize : 5,
-					blockSize : 5,
-					pageNav : "",
-					lectureSeq : ""
-
-				},
-				method : {
-
-				}
-
-			});
-
-			lectureDetailArea = new Vue({
-				el: "#lectureDetailArea",
-				data : {
-					lectureNameDiv : "",
-					teacherNameDiv : "",
-					lectureStartDiv : "",
-					lectureEndDiv : "",
-					lecturePersonDiv : "",
-					lectureTotalDiv : "",
-					lectureGoalDiv : "",
-					roomNameDiv : "",
-					lecturePlanDiv : "",
-					action : "",
-					lecturePlanItem : [],
-					totalCnt : 0,
-				},
-				method : {
-
-				}
-			});
-
-			comcombo("lecture_no", "lectureName", "all", "");
-		}
-		//TODO 리스트 전체 불러오기
-		function showLectureList(pagenum){
-
-			pageNum = pagenum || 1;
-
-			var param = {
-				pagenum : pageNum,
-				pageSize: lectureListArea.pageSize,
-				searchKey : headerArea.lectureName,
-				searchWord: headerArea.searchWord,
-				lectureSeq: lectureListArea.lectureSeq
-
+		lectureHeaderArea = new Vue({
+			el: "#lectureHeaderArea",
+			data : {
+				search : "",
 			}
+		});
 
-			var listCallBack = function(listData){
-
-				lectureListArea.currentPage = pageNum;
-				console.log("데이터 확인 : " + JSON.stringify(listData));
-
-				lectureListArea.listItem = listData.lectureListSearch;
-				lectureListArea.totalCnt = listData.totalcnt;
-
-				//TODO 데이터 없을때 페이지 만들지 않는 로직 추가
-
-				var paginationHtml = getPaginationHtml(pageNum, lectureListArea.totalcnt, lectureListArea.pageSize, lectureListArea.blockSize, 'showLectureList');
-
-				lectureListArea.pageNav = paginationHtml;
-
-				console.log(lectureListArea.listItem);
-				console.log(lectureListArea.totalcnt);
-			};
-
-			callAjax("/std/lectureListSearchVue.do", "post" , "json", "false", param, listCallBack);
-		}
-
-
-		//TODO 데이터 한건씩 조회하기
-		function showLectureDetail(lectureSeq){
-			console.log("강의번호 : " + lectureSeq);
-
-			lectureListArea.lectureSeq = lectureSeq;
-
-			var param = {
-				lectureSeq : lectureSeq,
+		lectureListArea = new Vue({
+			el: "#lectureListArea",
+			data : {
+				lectureItem : [],
+				totalCnt : 0,
+				currentPage : 0,
+				pageSize : 5,
+				blockSize : 5,
+				pageNav : "",
+				loginId : "",
+				lectureSeq : "",
+				lectureName : ""
 			}
+		});
 
-			var resultCallBack = function (lectureSeq) {
-				console.log("선택항목 데이터 : " + JSON.stringify(lectureSeq));
-
-				functionInitForm(lectureSeq.lectureSelect);
-				gfModalPop("#lectureDetailArea");
-
-			};
-			callAjax("/std/lectureSelect.do", "post" , "json", true, param, resultCallBack)
-		}
-
-		function functionInitForm(data){
-			lectureDetailArea.lectureNameDiv = data.lecture_name;
-			lectureDetailArea.teacherNameDiv = data.teacher_name;
-			lectureDetailArea.lectureStartDiv = data.lecture_start;
-			lectureDetailArea.lectureEndDiv= data.lecture_end;
-			lectureDetailArea.lecturePersonDiv= data.lecture_person;
-			lectureDetailArea.lectureTotalDiv = data.lecture_total;
-			lectureDetailArea.lectureGoalDiv = data.lecture_goal;
-			lectureDetailArea.roomNameDiv = data.room_name;
-			lectureDetailArea.lecturePlanDiv = data.lecture_plan;
-
-			showLecturePlan();
-		}
-
-		function showLecturePlan(){
-			var param = {
-				lectureSeq : lectureListArea.lectureSeq,
+		sendListArea  = new Vue({
+			el : "#sendListArea",
+			data : {
+				taskItem : [],
+				totalCnt : 0,
+				currentPage : 0,
+				pageSize : 5,
+				blockSize: 5,
+				planNo : 0,
+				pageNav : "",
 			}
+		});
 
-			var planCallBack = function(lecturePlanListData){
-				console.log("강의계획서 목록 : " + JSON.stringify(lecturePlanListData));
-
-				lectureDetailArea .lecturePlanItem = lecturePlanListData.lecturePlanSelect;
-				lectureDetailArea .totalCnt = lecturePlanListData.totalcnt;
-				
-			};
-
-			callAjax("/std/showLecturePlan.do", "post" , "json", true, param, planCallBack)
-		}
-
-
-		//TODO
-		function studentInsert(){
-
-			console.log( "============신청 데이터 입니다 ======================" + lectureListArea.lectureSeq);
-
-			var action = lectureDetailArea.action;
-			var param = {
-				action : "I",
-				lectureSeq : "",//불러오기;
+		taskContentLayer= new Vue({
+			el :"#taskContentLayer",
+			data : {
+				lectureName : "",
+				taskWeek : "",
+				taskStart : "",
+				taskEnd  : "",
+				taskTitle : "",
+				taskContent : "",
+				fileInfo : "",
 			}
+		});
+
+		taskSendLayer = new Vue({
+			el : "#taskSendLayer",
+			data : {
+				studentLecture : "",
+				studentPlanWeek : "",
+				sendTitle : "",
+				sendContent : "",
+				sendFileName : "",
+				taskNo : "",
+				action : ""
+			}
+		});
+
+	}
+
+
+	//TODO: 리스트 전체 불러오기
+	function showLectureList(pageNum){
+
+		$("#sendListArea").hide()
+		pageNum = pageNum || 1;
+
+		lectureListArea.currentPage= pageNum;
+
+		var logId = findId.loginId;
+
+		console.log("111+" + logId);
+
+		var param = {
+			pageNum : pageNum,
+			pageSize : lectureListArea.pageSize,
+			lectureSeq : lectureListArea.lectureSeq
+		}
+		//TODO 로그인 아이디 필요함
+		console.log(param);
+
+		var lectureListCallBack = function(lectureListData){
+			lectureListArea.currentPage = pageNum;
+			//console.log("수강내역 조회 : " + JSON.stringify(lectureListData));
+
+		var paginationHtml = getPaginationHtml(pageNum, lectureListArea.totalcnt, lectureListArea.pageSize, lectureListArea.blockSize, 'showLectureList');
+		lectureListArea.lectureListPagination  = paginationHtml;
+
+			lectureListArea.lectureItem = lectureListData.lectureList;
+			lectureListArea.totalCnt = lectureListData.totalCnt;
+
+			//console.log(lectureListData);
+			//console.log(JSON.stringify(lectureListData));
+
+		};
+
+		callAjax("/std/courseListVue.do", "post", "json", "false", param, lectureListCallBack);
+	}
+
+
+	//TODO: 과제관리 목록 보여주기
+	function showSendList(lec_seq,lectureName){
+
+		$("#sendListArea").show()
+
+		taskContentLayer.lectureName = lectureName;
+		//console.log(taskContentLayer.lectureName);
+
+		//console.log(taskContentLayer.taskWeek);
+		sendListArea.currentPage = sendListArea.currentPage || 1;
+		lectureListArea.lectureSeq = lec_seq;
+
+		var param = {
+			pageNum : sendListArea.currentPage,
+			pageSize : sendListArea.pageSize,
+			lectureSeq: lectureListArea.lectureSeq,
+			loginId: lectureListArea.loginId,
+		}
+		//console.log(param);
+
+		var taskListCallBack = function(taskData){
+			console.log("과제내역 조회 : " + JSON.stringify(taskData));
+
+			sendListArea.taskItem = taskData.taskList;
+			sendListArea.totalCnt = taskData.totalCnt;
+
+
+		};
+		callAjax("/std/taskListVue.do", "post", "json", "false", param, taskListCallBack);
+		//TODO 초기화하기: 클릭할 때 마다 다시 조회하기
+		sendListArea.tbodySendList = [];
+	}
+
+	//TODO 데이터 한건씩 조회하기
+	function showTaskDetail(planNo, planWeek){
+
+		sendListArea.planNo = planNo;
+
+		var param = {
+			planNo : planNo
 		}
 
-		//TODO 검색 다시한번
+		var resultCallBack = function(planNo){
+			console.log("과제내용 상세보기" + JSON.stringify(planNo));
+
+			functionInitForm(planNo.taskInfo);
+			gfModalPop('#taskContentLayer');
+			taskContentLayer.taskWeek = planWeek;
+		};
+		callAjax("/std/taskContent.do", "post", "json", true, param, resultCallBack)
+
+	}
+
+	function functionInitForm(data){
+
+		var fileName = data.taskName;
+		var notFile = "없엉 ㅎㅎㅎㅎㅎㅎ";
 
 
+		if(fileName == null || fileName == "" || fileName == undefined){
+			taskContentLayer.fileinfo = notFile;
+		}else{
+			taskContentLayer.fileinfo = data.taskName;
+		}
+
+		taskContentLayer.taskStart = data.taskStart;
+		taskContentLayer.taskEnd = data.taskEnd;
+		taskContentLayer.taskTitle = data.taskTitle;
+		taskContentLayer.taskContent = data.taskContent;
+
+	}
+
+//TODO 과제제출 상세보기
+	function showSendDetail(planNo,taskNo){
+
+		sendListArea.planNo = planNo;
 
 
+		var lectureSeq = lectureListArea.lectureSeq;
+		var loginId = findId.loginId;
+		var param = {
+			planNo : planNo,
+			lectureSeq : lectureSeq,
+			taskNo : taskNo
+		}
 
-	</script>
+		console.log("로그인 아이디 : " + loginId + " 파라미터 : " + planNo + " 시퀀스:" + lectureSeq + " 과제번호 : " + taskNo );
+		//param  값 읽힘
+
+		var detailCallBack = function(lectureSeq){
+			console.log("제출내용 상세보기 " + JSON.stringify(lectureSeq));
+
+			functionInitForm2(lectureSeq);
+			gfModalPop('#taskSendLayer');
+		};
+		callAjax("/std/taskSendSelect.do", "post", "json", true, param, detailCallBack)
+	}
+
+	//TODO : 버튼 조건값 입력하기
+	function functionInitForm2(data2){
+
+		if(data2==null || data2 == "" || data2 == undefined){
+			taskSendLayer.action = "I"
+		}
+
+		//파이썬만 데이터 있어서 읽힘
+		taskSendLayer.studentLecture = data2.lectureNo;
+		taskSendLayer.sendTitle = data2.sendTitle;
+		taskSendLayer.sendContent = data2.sendContent;
+	}
+	
+		
+</script>
 
 </head>
 <body>
 <form id="myForm" action=""  method="">
-	<input type="hidden" name="lectureSeq" id="lectureSeq" value="">
-	<input type="hidden" name="action" id="action" value="">
-
+	<div id="findId">
+		<input type="hidden" name="action" id="action" value="">
+		<input type="hidden" name="lectureSeq" id="lectureSeq" value="">
+		<input type="hidden" name="planNo" id="planNo" value="">
+		<input type="hidden" name="lecture" id="lecture" value="">
+		<input type="hidden" name="taskNo" id="taskNo" value="">
+		<input type="hidden" name="planWeek" id="planWeek" value="">
+<%--		<input type="text"  name="loginId" id="loginId" value="${loginId}">--%>
+<%--		<input type="text"  name="loginId" id="loginId" value="${loginId}" v-model="loginId">--%>
+	</div>
 	<!-- 모달 배경 -->
 	<div id="mask"></div>
 
@@ -257,105 +330,112 @@
 					<h3 class="hidden">contents 영역</h3> <!-- content -->
 					<div class="content">
 
-						<p class="Location">
+						<p class="Location" >
 							<a href="../dashboard/dashboard.do" class="btn_set home">메인으로</a> <span
-								class="btn_nav bold">학습지원</span> <span class="btn_nav bold">강의목록</span>
-							<a href="../std/lectureList.do" class="btn_set refresh">새로고침</a>
+								class="btn_nav bold">학습관리</span> <span class="btn_nav bold">과제제출</span> 
+								<a href="../std/taskSend.do" class="btn_set refresh">새로고침</a>
 						</p>
 
-						<!-- 강의목록 select문 빼야될 수도 있어서 메모 -->
-						<p class="conTitle" id="headerArea">
-							<span>강의목록</span> <span class="fr">
-							<label for="lectureName">목록보기 :
-								<select name="lectureName" id="lectureName" style="width: 150px;">
-
-								</select>
-							</label>
-
-
-								마감인원
-		     	                <input type="text" style="width: 300px; height: 25px;" id="searchWord" name="searchWord" v-model="searchWord" onkeyup="showLectureList()">
-			                    <a href="" class="btnType blue" id="btnSearchLecture" name="btn"><span>검  색</span></a>
+						<p class="conTitle" id="lectureHeaderArea">
+							<span>수강 내역</span> <span class="fr"> 
+								<select id="lectuerName" name="lectuerName" style="width: 150px;">
+								 <option value="name">강의명</option> </select>
+							   <input type="text" style="width: 200px; height: 25px; " id="search" name="search" placeholder="검색어를 입력하세요" v-model="search">
+			                    <a href="" class="btnType blue" id="btnSearch" name="btn"><span>검  색</span></a>
 							</span>
 						</p>
-
-						<div class="divLectureList" id="lectureListArea">
-
+						
+						<div class="lectureList" id="lectureListArea">
 							<table class="col">
 								<caption>caption</caption>
 								<colgroup>
 									<col width="10%">
-									<col width="20%">
-									<col width="10%">
-									<col width="20%">
-									<col width="20%">
-									<col width="10%">
+									<col width="30%">
+									<col width="15%">
+									<col width="35%">
 									<col width="10%">
 								</colgroup>
-
+	
 								<thead>
-								<tr>
-									<th scope="col">강사명</th>
-									<th scope="col">강의명</th>
-									<th scope="col">강의실</th>
-									<th scope="col">강의 시작날짜</th>
-									<th scope="col">강의 종료날짜</th>
-									<th scope="col">모집인원</th>
-									<th scope="col">마감인원</th>
-								</tr>
-								</thead>
-								<%--	TODO 리스트 불러오기							--%>
-								<template v-if="totalCnt == 0">
-									<tbody>
 									<tr>
-										<td colspan="7"> 데이터없당 </td>
+										<th scope="col">강의번호</th>
+										<th scope="col">강의명</th>
+										<th scope="col">강사</th>
+										<th scope="col">기간</th>
+										<th scope="col">버튼</th>
+										
 									</tr>
+								</thead>
+								<template>
+									<tbody v-for="(lecture, lectures) in lectureItem">
+										<tr>
+											<td>{{lecture.lectureSeq}}</td>
+											<td v-model="lectureName">{{lecture.lectureName}}</td>
+											<td>{{lecture.teacherName}}</td>
+											<td>{{lecture.lectureStart}} ~ {{lecture.lectureEnd}}</td>
+											<td @click="showSendList(lecture.lectureSeq, lecture.lectureName)"><a class="btnType3 color1">과제관리</a></td>
+										</tr>
 									</tbody>
 								</template>
-
-								<template  v-else>
-									<tbody v-for="(item, index) in listItem">
-									<tr @click="showLectureDetail(item.lecture_seq)">
-										<%--	TODO : JSON으로 불러온 데이터 한세트 : {"lecture_seq":10,"lecture_no":5,"loginID":"teacher","test_no":0,"lecture_name":"C언어","room_name":"1001호","lecture_person":"1","lecture_total":"10","lecture_goal":"ㅁ","lecture_start":"2023-03-20","lecture_end":"2023-03-24","lecture_confirm":"N","teacher_name":"강사","lecture_plan":null,"plan_week":null,"plan_goal":null,"plan_content":null,"cnt":0,"today":null},										--%>
-										<td>{{item.teacher_name}}</td>
-										<td>{{item.lecture_name}}</td>
-										<td>{{item.room_name}}</td>
-										<td>{{item.lecture_start}}</td>
-										<td>{{item.lecture_end}}</td>
-										<td>{{item.lecture_person}}</td>
-										<td>{{item.lecture_total}}</td>
-									</tr>
-									</tbody>
-								</template>
-
-
-							</table>
-							<div class="paging_area"  id="lecturePagination" v-html="pageNav"> </div>
+							 </table>
+						   <div class="paging_area" id="lectureListPagination"> </div>
 						</div>
-
-
-
-
-
-
+						<br>
+						<br>
+						<div id="sendListArea">
+						<p class="conTitle">
+							<span>과제 관리</span> <span class="fr">                
+							</span>
+						</p>
+							<table class="col">
+								<caption>caption</caption>
+								<colgroup>
+									<col width="10%">
+									<col width="60%">
+									<col width="20%">
+									<col width="10%">
+								</colgroup>
+								<thead>
+									<tr>
+										<th scope="col">주차</th>
+										<th scope="col">학습목표</th>
+										<th scope="col">과제</th>
+										<th scope="col">제출</th>
+									</tr>
+								</thead>
+<%--								<tbody id="tbodySendList" v-for="taskItem"></tbody>--%>
+								<tbody id="tbodySendList" v-for="(task, tasks) in taskItem">
+								<tr>
+									<td>{{task.plan_week}}</td>
+									<td>{{task.plan_goal}}</td>
+									<td v-if="task.task_no == 0">등록된 과제가 없네용</td>
+									<td v-else @click="showTaskDetail(task.plan_no, task.plan_week)"><a class="btnType3 color1">과제내용</a></td>
+									<td v-if="task.task_no == 0">버튼도 없당</td>
+									<td v-else @click="showSendDetail(task.plan_no)"><a class="btnType3 color1">제출하기</a></td>
+								</tr>
+								</tbody>
+							 </table>
+						   <div class="paging_area"  id="sendListPagination"> </div>
+						</div>
+	
 					</div> <!--// content -->
 
 					<h3 class="hidden">풋터 영역</h3>
-					<jsp:include page="/WEB-INF/view/common/footer.jsp"></jsp:include>
+						<jsp:include page="/WEB-INF/view/common/footer.jsp"></jsp:include>
 				</li>
 			</ul>
 		</div>
 	</div>
 
 	<!-- 모달팝업 -->
-	<div id="lectureDetailArea" class="layerPop layerType2" style="width: 1000px;">
+	<div id="taskContentLayer" class="layerPop layerType2" style="width: 800px; height: 630px;">
 		<dl>
 			<dt>
-				<strong>강의 신청</strong>
+				<strong>과제 내용</strong>
 			</dt>
 			<dd class="content">
 				<!-- s : 여기에 내용입력 -->
-				<table class="row">
+				<table class="row" style="width: 750px; height: 450px;">
 					<caption>caption</caption>
 					<colgroup>
 						<col width="120px">
@@ -365,83 +445,98 @@
 					</colgroup>
 
 					<tbody>
-					<tr>
-						<th scope="row">과목 </th>
-						<td><div id="lectureNameDiv" v-html="lectureNameDiv"></div></td>
-						<th scope="row">강사명 </th>
-						<td><div id="teacherNameDiv" v-html="teacherNameDiv">  </div></td>
-					</tr>
-					<tr>
-						<th scope="row">강의 시작일 </th>
-						<td><div id="lectureStartDiv" v-html="lectureStartDiv">  </div></td>
-						<th scope="row">강의 마감일 </th>
-						<td><div id="lectureEndDiv" v-html="lectureEndDiv">  </div></td>
-					</tr>
-					<tr>
-						<th scope="row">모집인원 </th>
-						<td><div id="lecturePersonDiv" v-html="lecturePersonDiv">  </div></td>
-						<th scope="row">마감인원 </th>
-						<td><div id="lectureTotalDiv" v-html="lectureTotalDiv">  </div></td>
-					</tr>
-					<tr>
-						<th scope="row">수업목표</th>
-						<td><div id="lectureGoalDiv" v-html="lectureGoalDiv">  </div></td>
-						<th scope="row">강의실</th>
-						<td><div id="roomNameDiv" v-html="roomNameDiv">  </div></td>
-					</tr>
-					<tr>
-						<th scope="row">강의계획</th>
-						<td colspan="3">
-					<div id="lecturePlanArea" v-model="lecturePlanArea">
-
-							<table class="col">
-								<caption>caption</caption>
-								<colgroup>
-									<col width="10%">
-									<col width="30%">
-									<col width="60%">
-								</colgroup>
-
-								<thead>
-								<tr>
-									<th scope="col">주 차수</th>
-									<th scope="col">학습목표</th>
-									<th scope="col">학습내용</th>
-								</tr>
-								</thead>
-<%--								TODO 강의계획서 불러오기									--%>
-<%--								<template v-if="totalcnt ==0">--%>
-<%--									<tr>--%>
-<%--										<td colspan="5"> 강의 선택해라. </td>--%>
-<%--									</tr>--%>
-<%--								</template>--%>
-									<tbody id="listPlan" v-for="(lecturePlan, index) in lecturePlanItem">
-									<tr>
-										<td></td>
-										<td></td>
-										<td></td>
-										<td>{{lecturePlan.plan_week}}</td>
-										<td>{{lecturePlan.plan_goal}}</td>
-										<td>{{lecturePlan.plan_content}}</td>
-									</tr>
-									</tbody>
-
-
-							</table>
-						</div>
-						</td>
-					</tr>
+						<tr>
+							<th scope="row">강의명</th>
+							  <td><div id="lectureName" v-html="lectureName"></div></td>
+							<th scope="row">주차 </th>
+							  <td><div id="taskWeek" v-html="taskWeek"></div></td>
+						</tr>
+						<tr>
+							<th scope="row">제출일</th>
+							   <td><div id="taskStart" v-html="taskStart"></div></td>
+							<th scope="row">마감일</th>
+							    <td><div id="taskEnd" v-html="taskEnd"></div></td>
+						</tr>
+						<tr>
+							<th scope="row">과제명</th>
+							  <td colspan="3"><div id="taskTitle" v-html="taskTitle"></div></td>
+						</tr>	  
+						<tr style=" height: 150px;">
+							<th scope="row">과제 내용</th>
+							  <td colspan="3"><div id="taskContent" v-html="taskContent"></div></td>
+						</tr>	  
+				
+						<tr>
+							<th scope="row">파일 </th>
+							<td colspan="3"><div id="fileinfo" v-html="fileinfo"> </div></td>
+						</tr>
 					</tbody>
 				</table>
 
 				<!-- e : 여기에 내용입력 -->
 
 				<div class="btn_areaC mt30">
-					<a href="" class="btnType blue" id="btnSaveLecture" name="btn"><span>신청</span></a>
-					<a href=""	class="btnType gray"  id="btnCloseLecture" name="btn"><span>취소</span></a>
+					<a href=""	class="btnType gray"  id="btnCloseGrpCod" name="btn"><span>닫기</span></a>
 				</div>
 			</dd>
 		</dl>
+		<a href="" class="closePop"><span class="hidden">닫기</span></a>
+	</div>
+
+	<!-- 고ㅏ제 제출 모달  -->
+	<div id="taskSendLayer" class="layerPop layerType2" style="width:580px">
+		<dl>
+			<dt>
+				<strong>과제 제출</strong>
+			</dt>
+			<dd class="content">
+
+				<!-- s : 여기에 내용입력 -->
+
+				<table class="row"   style="width:500px">
+					<caption>caption</caption>
+					<colgroup>
+						<col width="120px">
+						<col width="*">
+						<col width="120px">
+						<col width="*">
+					</colgroup>
+
+					<tbody>
+						<input type="hidden" name="t_planNo" id="t_planNo" value=""/>
+						<input type="hidden" name="t_taskNo" id="t_taskNo" v-model="taskNo" value=""/>
+						<tr>
+							<th scope="row">강의명 </th>
+							<td><input type="text" class="inputTxt p100" id="s_lecture" name="s_lecture" v-html="studentLecture"readonly/></td>
+							<th scope="row">주차</th>
+							<td><input type="text" class="inputTxt p100" id="s_planWeek" name="s_planWeek" v-model="studentPlanWeek" readonly/></td>
+						</tr>
+						<tr>
+							<th scope="row">제목 <span class="font_red">*</span></th>
+							<td colspan="3"><input type="text" class="inputTxt p100" id="sendTitle" name="sendTitle" v-html="sendTitle" /></td>
+						</tr>
+						<tr>
+						<th scope="row">내용 <span class="font_red">*</span></th>
+							<td colspan="3"><textarea  name="sendContent" id="sendContent" style="height: 100px; resize: none;" v-model="sendContent"></textarea></td>
+						</tr>	
+					    <tr>
+							<th scope="row">파일 </th>
+							<td colspan="2"><input type="file" class="inputTxt p100"name="selfile" id="selfile" v-model="sendFileName"/>
+							<td colspan="2"><div id="fileInfo"> </div></td>
+						</tr>
+					</tbody>
+				</table>
+
+				<!-- e : 여기에 내용입력 -->
+
+				<div class="btn_areaC mt30">
+					<a href="" class="btnType blue" id="btnSaveTask" name="btn"><span>제출</span></a> 
+					<a href="" class="btnType blue" id="btnUpdateTask" @click.prevent="" name="btn"><span>수정</span></a>
+					<a href="" class="btnType gray" id="btnCloseDtlCod" name="btn"><span>취소</span></a>
+				</div>
+			</dd>
+		</dl>
+		<a href="" class="closePop"><span class="hidden">닫기</span></a>
 	</div>
 	<!--// 모달팝업 -->
 </form>
