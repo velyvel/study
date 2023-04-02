@@ -47,10 +47,18 @@ $(document).ready(function() {
 	}
 
 	$("#EMP_ID").focus();
-
+	
 	init();
-
+	
 });
+
+/**
+ * 뷰로 화원가입 바꾸기 시작 */
+
+	var registArea;
+
+/** 뷰로 회원가입 바꾸기 끝 */
+
 
 
 function fcancleModal(){
@@ -59,21 +67,12 @@ function fcancleModal(){
 
 /* 회원가입 모달창 실행 */
 function fRegister() {
-	//var div_cd;
-
-	//$("#action").val("I");
-	check.action = "I";
-
+	var div_cd;
+	$("#action").val("I");
 	// 모달 팝업
 	gfModalPop("#layer1");
-	//init();
 	instaffRegister();
-
-
-	//모달 초기화
-
 }
-
 
 
  function init() {
@@ -91,51 +90,34 @@ function fRegister() {
 			sklcdlistCod:'',
 			areacdlistCod:'',
 			skillgrpcd:'',
-			skilldtlcd:'',
+			skilldtlcd:''
+			
+		}
+	});
 
-			registerId : "",
-			passWord : "",
+	registArea = new Vue({
+		el : "#layer1",
+		data : {
+			loginId : "",
+			password : "",
 			name : "",
 			gender : "",
 			birth : "",
 			email : "",
-			//detailaddr
 			zipCode : "",
-			//loginaddr
 			address : "",
-			//loginaddr1
 			detailAddress : "",
 			tel1 : "",
 			tel2 : "",
 			tel3 : "",
-			action : "",
-			checkLoginIdAndCheckRegisterId : "0",
-			checkEmailAndCheckRegister : "0",
-			registerPwdOk : "",
-
-			//hidden으로 받아오는 친구들!
-			divCd : "",
-			delCd : "",
-			userType : "",
-			approvalCd : "",
-
-			//학생, 강사 체크하기
-			stuCk : false,
-			teaCk : false,
-			fileTable : false,
-
-			resumeCheck : "",
-
 		}
-	});
+	})
 
  }
 
-
-
  /*체크리스트 콜백함수*/
- function checklistResult(data){
-
+ function checklistResult(data){ 	
+	
 	/*callAjax시 로그인 여부 확인 하므로 ajax 함수 직접 작성*/
  	$.ajax({
 		url : '/checklist.do',
@@ -165,112 +147,68 @@ $("input[v-model=chkbox]:checked").each(function(){
 
 /*학생 회원가입 폼 초기화*/
 function instaffRegister(){
-	check.stuCk=true;
-	//$("#stuCk").show();
-	check.teaCk=false;
-	//$("#teaCk").hide();
-	check.userType = "A";
-	//$("#user_type").val("A");
-	check.divCd = "Student";
-	//$("#div_cd").val("Student");
-
-	//$("#user_type_li").hide();
-	check.registerId = "";
-	//$("#registerId").val("");
-	check.passWord = "";
-	// $("#registerPwd").val("");
-	check.checkLoginIdAndCheckRegisterId = "";
-	// $("#registerPwdOk").val("");
-	// $("#rggender_th").show();
-	// $("#rggender_td").show();
-	// $("#registerName").show();
-	// $("#registerName_th").show();
-	check.gender = "";
- 	// $("#gender").val("");
-	check.email="";
-	// $("#registerEmail").val("");
-	check.zipCode="";
-	// $("#detailaddr").val("");
-	check.address="";
-	// $("#loginaddr").val("");
-	check.detailAddress = "";
-	// $("#loginaddr1").val("");
-	check.tel1 = "";
-	// $("#tel1").val("");
-	check.tel2 = "";
-	// $("#tel2").val("");
-	check.tel3 = "";
-	// $("#tel3").val("");
-	check.divCd = "n";
-	// $("#del_cd").val("n");
-	check.approvalCd = "n";
-	// $("#approval_cd").val("n");
-	check.checkLoginIdAndCheckRegisterId = "0";
-	// $("#ckIdcheckreg").val("0");
-	// $("#birthday1").show();
-	// //학생 이력서 테이블
-	check.fileTable=true;
-	// $("#filetable").show();
-	// $("#resumecheck").val("N");
-	check.resumeCheck = "N";
+	
+	$("#stuCk").show();
+	$("#teaCk").hide();
+	$("#user_type").val("A");
+	$("#div_cd").val("Student");
+	$("#user_type_li").hide();
+	$("#registerId").val("");
+	$("#registerPwd").val("");
+	$("#registerPwdOk").val("");
+	$("#rggender_th").show();
+	$("#rggender_td").show();
+	$("#registerName").show();
+	$("#registerName_th").show();
+ 	$("#gender").val("");
+	$("#registerEmail").val("");
+	$("#detailaddr").val("");
+	$("#loginaddr").val("");
+	$("#loginaddr1").val("");
+	$("#tel1").val("");
+	$("#tel2").val("");
+	$("#tel3").val("");
+	$("#del_cd").val("n");
+	$("#approval_cd").val("n");
+	$("#ckIdcheckreg").val("0");
+	$("#birthday1").show();
+	$("#filetable").show();
+	$("#resumecheck").val("N");
 	$("#resumecheck").hide();
-	check.action="I";
 }
 
 /*강사 회원가입 폼 초기화*/
 function outstaffRegister(){
-//추가
 
-	//$("#stuCk").hide();
-	check.stuCk=false;
-	//$("#teaCk").show();
-	check.teaCk=true;
-	//$("#user_type").val("D");
-	check.userType = "D";
-	//$("#div_cd").val("Teacher");
-	check.divCd = "Teacher";
-	//$("#user_type_li").hide();
-	//$("#registerId").val("");
-	check.registerId = "";
-	//$("#registerPwd").val("");
-	check.passWord = "";
-	//$("#registerPwdOk").val("");
-	check.checkLoginIdAndCheckRegisterId = "";
-	//$("#rggender_th").show();
-	//$("#rggender_td").show();
-	//$("#registerName").show();
-	//$("#registerName_th").show();
-	//$("#gender").val("");
-	check.gender = "";
-	//$("#registerEmail").val("");
-	check.email="";
-	//$("#detailaddr").val("");
-	check.zipCode="";
-	//$("#loginaddr").val("");
-	check.address="";
-	//$("#loginaddr1").val("");
-	check.detailAddress = "";
-	//$("#tel1").val("");
-	check.tel1 = "";
-	//$("#tel2").val("");
-	check.tel2 = "";
-	//$("#tel3").val("");
-	check.tel3 = "";
-	//$("#del_cd").val("n");
-	check.divCd = "n";
-	//$("#approval_cd").val("n");
-	check.approvalCd = "n";
-	//$("#ckIdcheckreg").val("0");
-	check.checkLoginIdAndCheckRegisterId = "0";
-	//$("#birthday1").show();
-	//$("#filetable").hide();
-	check.fileTable = false;
-	//$("#resumecheck").val("N");
-	check.resumeCheck = "N";
+	$("#stuCk").hide();
+	$("#teaCk").show();
+	$("#user_type").val("D");
+	$("#div_cd").val("Teacher");
+	$("#user_type_li").hide();
+	$("#registerId").val("");
+	$("#registerPwd").val("");
+	$("#registerPwdOk").val("");
+	$("#rggender_th").show();
+	$("#rggender_td").show();
+	$("#registerName").show();
+	$("#registerName_th").show();
+ 	$("#gender").val("");
+	$("#registerEmail").val("");
+	$("#detailaddr").val("");
+	$("#loginaddr").val("");
+	$("#loginaddr1").val("");
+	$("#tel1").val("");
+	$("#tel2").val("");
+	$("#tel3").val("");
+	$("#del_cd").val("n");
+	$("#approval_cd").val("n");
+	$("#ckIdcheckreg").val("0");
+	$("#birthday1").show();
+	$("#filetable").hide();
+	$("#resumecheck").val("N");
 	$("#resumecheck").hide();
-	check.action="I";
-
 }
+
 
 
 /* 아이디/비밀번호 찾기 모달창 실행 */
@@ -278,252 +216,155 @@ function findIdPwd() {
 
 	// 모달 팝업
 	gfModalPop("#layer2");
-
+	
 }
 
 
 /* 회원가입 validation */
 function RegisterVal(){
-
-	// var div_cd = $('#div_cd').val();
-	// var user_type = $('#user_type').val();
-	// var rgid = $('#registerId').val();
-	// var rgpwd = $('#registerPwd').val();
-	// var rgpwdok = $('#registerPwdOk').val();
-	// var rgname = $('#registerName').val();
-	// var user_company =$('#user_company').val();
-	// var rgemail = $('#registerEmail').val();
-	// var dtadr = $('#detailaddr').val();
-	// var lgadr = $('#loginaddr').val();
-	// var lgadr1 = $('#loginaddr1').val();
-	// var tel1 = $('#tel1').val();
-	// var tel2 = $('#tel2').val();
-	// var tel3 = $('#tel3').val();
-
-	//밑에 두개는 원래 주석처리 되어 있었음
+	  
+	var div_cd = $('#div_cd').val();
+	var user_type = $('#user_type').val();
+	var rgid = $('#registerId').val();
+	var rgpwd = $('#registerPwd').val();
+	var rgpwdok = $('#registerPwdOk').val();
+	var rgname = $('#registerName').val();
+	var user_company =$('#user_company').val();
+	var rgemail = $('#registerEmail').val();
+	var dtadr = $('#detailaddr').val();
+	var lgadr = $('#loginaddr').val();
+	var lgadr1 = $('#loginaddr1').val();
+	var tel1 = $('#tel1').val();
+	var tel2 = $('#tel2').val();
+	var tel3 = $('#tel3').val();
 /* 	var bank_cd = $('#bank_nm').val();
 	var bank_account = $('#bank_account').val(); */
 
-	var div_cd = check.divCd;
-	var user_type = check.userType;
-	var rgid = check.registerId;
-	var rgpwd = check.passWord;
-	var rgpwdok = check.registerPwdOk
-	var rgname = check.name;
-	var user_company =$('#user_company').val();
-	var rgemail = check.email;
-	var dtadr = check.detailAddress;
-	var lgadr = check.address;
-	var lgadr1 = check.detailAddress;
-	var tel1 = check.tel1;
-	var tel2 = check.tel2;
-	var tel3 = check.tel3;
-
-
 	if(user_type == ""){
-	//if(check.userType == ""){
-		swal("타입을 입력해주세요.")
-		//swal("타입을 입력해주세요.").then(function() {
-			//$("#user_type").focus();
-		  //});
+		swal("타입을 입력해주세요.").then(function() {
+			$("#user_type").focus();
+		  });
 		return false;
 	}
 
-
+	
 	if(rgid.length < 1){
-// 	if(check.registerId.length < 1){
-// 		//swal("아이디를 입력하세요.").then(function() {
-		swal("아이디를 입력하세요.")
-// 			//$('#registerId').focus();
-// 			//check.registerId.focus();
-// 		 // });
+		swal("아이디를 입력하세요.").then(function() {
+			$('#registerId').focus();
+		  });
 		return false;
 	}
-//
- 	if(rgpwd.length < 1){
-// 		//swal("비밀번호를 입력하세요.").then(function() {
- 		swal("비밀번호를 입력하세요.")
-// 			// $('#registerPwd').focus();
-// 			//$('#registerPwd').focus();
-// 			//check.password.focus();
-// 		 // });
- 		return false;
- 	}
-
- 	if(rgpwdok.length < 1){
-// 		//swal("비밀번호 확인을 입력하세요.").then(function() {
-		swal("비밀번호 확인을 입력하세요.")
-// 			// $('#registerPwdOk').focus();
-// 			//check.registerPwdOk.focus();
-//		  //});
+	
+	if(rgpwd.length < 1){
+		swal("비밀번호를 입력하세요.").then(function() {
+			$('#registerPwd').focus();
+		  });
 		return false;
 	}
-//
+	
+	if(rgpwdok.length < 1){
+		swal("비밀번호 확인을 입력하세요.").then(function() {
+			$('#registerPwdOk').focus();
+		  });
+		return false;
+	}
+	
 	if(rgpwd != rgpwdok){
-		//swal("비밀번호가 맞지 않습니다.").then(function() {
-		swal("비밀번호가 맞지 않습니다.")
-			// $('#registerPwd').focus();
-			//check.password.focus();
+		swal("비밀번호가 맞지 않습니다.").then(function() {
+			$('#registerPwd').focus();
+		  });
 		return false;
 	}
-
+	
 	if(rgname.length < 1){
-	//if(check.Name.length < 1){
-		//swal("이름을 입력하세요.").then(function() {
-		swal("이름을 입력하세요.")
-			// $('#registerName').focus();
-			//check.Name.focus();
-		 // });
+		swal("이름을 입력하세요.").then(function() {
+			$('#registerName').focus();
+		  });
 		return false;
 	}
-//
-//
-//
+	
+	
+	if(div_cd == 'outstaff' && user_company.length < 1){
+		swal("회사명을 입력하세요.").then(function() {
+			$('#user_company').focus();
+		  });
+		return false;
+	}
+	
 	if(rgemail.length < 1){
-		// swal("이메일을 입력하세요.").then(function() {
-		swal("이메일을 입력하세요.")
-			// $('#registerEmail').focus();
-			//$('#registerEmail').focus();
-		  // });
+		swal("이메일을 입력하세요.").then(function() {
+			$('#registerEmail').focus();
+		  });
 		return false;
 	}
-//
+	
 	if(dtadr.length < 1){
-		// swal("우편번호를 입력하세요.").then(function() {
-		swal("우편번호를 입력하세요.")
-			//check.email.focus();
-		  // });
+		swal("우편번호를 입력하세요.").then(function() {
+			$('#detailaddr').focus();
+		  });
 		return false;
 	}
-
+	
 	if(lgadr.length < 1){
-		swal("주소를 입력하세요.")
-		//swal("주소를 입력하세요.").then(function() {
-			// $('#loginaddr').focus();
-			//check.address.focus();
-		 // });
+		swal("주소를 입력하세요.").then(function() {
+			$('#loginaddr').focus();
+		  });
 		return false;
 	}
-
-// 	//원래 주석처리 되어 있던 것
-	if(lgadr1.length < 1){
-	alert("상세주소를 입력하세요.");
-		//$('#loginaddr1').focus();
-	return false;
-		}
-
+	
+/* 	if(lgadr1.length < 1){
+		alert("상세주소를 입력하세요.");
+		$('#loginaddr1').focus();
+		return false;
+	} */
+	
 	if(tel1.length < 1){
-		swal("전화번호를 입력하세요.")
-		//swal("전화번호를 입력하세요.").then(function() {
-			// $('#tel1').focus();
-			//check.tel1.focus();
-		 // });
+		swal("전화번호를 입력하세요.").then(function() {
+			$('#tel1').focus();
+		  });
 		return false;
 	}
-
+	
 	if(tel2.length < 1){
-		swal("전화번호를 입력하세요.")
-		//swal("전화번호를 입력하세요.").then(function() {
-			// $('#tel1').focus();
-			//check.tel2.focus();
-		  //});
+		swal("전화번호를 입력하세요.").then(function() {
+			$('#tel2').focus();
+		  });
 		return false;
 	}
-
+	
 	if(tel3.length < 1){
-		swal("전화번호를 입력하세요.")
-		// swal("전화번호를 입력하세요.").then(function() {
-		// 	check.tel3.focus();
-		//   });
+		swal("전화번호를 입력하세요.").then(function() {
+			$('#tel3').focus();
+		  });
 		return false;
 	}
-
-
-
-
+	
+/* 	if(div_cd == 'outstaff' && bank_cd == "" ){
+		swal("은행을 선택하세요.").then(function() {
+			$('#bank_nm').focus();
+		  });
+		return false;
+	}
+	
+	if(div_cd == 'outstaff' && bank_account.length <1 ){
+		swal("계좌번호를 입력하세요.").then(function() {
+			$('#bank_account').focus();
+		  });
+		return false;
+	} */
+	
+	
+	
 	return true;
-
+	
 }
-
-//TODO 수정 중
 /*loginID 중복체크*/
 function loginIdCheck(){
-
-	//var data = {"loginID" : $("#registerId").val()};
-	var data = {"loginID" :check.registerId};
+	
+	var data = {"loginID" : $("#registerId").val()};
+	
 	var idRules =  /^[a-z0-9]{6,20}$/g ;
-	//var id = $("#registerId").val();
-	var id = check.registerId;
-	//console.log(id);
-	//console.log(data);
-
-	/*callAjax시 로그인 여부 확인 하므로 ajax 함수 직접 작성*/
-	$.ajax({
-		url : '/check_loginID.do',
-		type : 'post',
-		data : data,
-		//dataType : 'JSON',
-		dataType : 'json',
-		async : true,
-		success : function(data) {
-
-			console.log("아이디 값(data) 0인지 1인지:  " + JSON.stringify(data));
-
-			//if($("#registerId").val()==""){
-
-			if(check.registerId == ""){
-				console.log("아이디 입력란이 비어있음 ");
-				//swal("아이디를 입력해주세요.").then(function(){
-				swal("아이디를 입력해주세요.")
-					//$("#registerId").focus();
-					//check.registerId.focus();
-				//});
-
-				// check.checkLoginIdAndCheckRegisterId.val("0");
-				check.checkLoginIdAndCheckRegisterId = "0";
-			}
-			 else if (data==1){
-				console.log("중복된 아이디 ");
-				//swal("중복된 아이디가 존재합니다.").then(function(){
-				swal("중복된 아이디가 존재합니다.")
-					//$("#registerId").focus();
-					//check.registerId.focus();
-
-				//});
-				console.log(data);
-				//$("#ckIdcheckreg").val("0");
-				check.checkLoginIdAndCheckRegisterId="0";
-
-			//} else if(!idRules.test($("#registerId").val())){
-			} else if(!idRules.test(check.registerId)){
-				swal('아이디는 숫자,영문자 조합으로 6~20자리를 사용해야 합니다.')
-				//swal('아이디는 숫자,영문자 조합으로 6~20자리를 사용해야 합니다.').then(function(){
-					//$("#registerId").focus();
-					//check.registerId.focus();
-				//});
-				// $("#ckIdcheckreg").val("0");
-				check.checkLoginIdAndCheckRegisterId="0";
-				return false;
-			} else if(data == 0){
-				console.log("사용할 수 있는 아이디 입니다.");
-				swal("사용할 수 있는 아이디 입니다.");
-				//$("#ckIdcheckreg").val("1");
-				check.checkLoginIdAndCheckRegisterId="1";
-			}
-		}
-	});
-}
-
-
-/** 회원가입 버튼 아이디 중복 체크*/
-function loginIdCheckComplete(){
-
-	//var data = {"loginID" : $("#registerId").val()}
-	var data = {"loginID" : check.registerId}
-
-	var idRules =  /^[a-z0-9]{6,20}$/g ;
-	//var id = $("#registerId").val();
-	var id = check.registerId;
+	var id = $("#registerId").val();
 
 	/*callAjax시 로그인 여부 확인 하므로 ajax 함수 직접 작성*/
 	$.ajax({
@@ -531,18 +372,59 @@ function loginIdCheckComplete(){
 		type : 'post',
 		data : data,
 		dataType : 'text',
-		//dataType : 'json',
+		async : true,
+		success : function(data) {
+			if($("#registerId").val()==""){
+				console.log("입력 아이디 없음");
+				swal("아이디를 입력해주세요.").then(function(){
+					$("#registerId").focus();
+				});
+				$("#ckIdcheckreg").val("0");
+			}
+			 else if (data==1){
+				console.log("아이디 있음");
+				swal("중복된 아이디가 존재합니다.").then(function(){
+					$("#registerId").focus();
+				});
+				console.log(data);
+				$("#ckIdcheckreg").val("0");
+			} else if(!idRules.test($("#registerId").val())){
+				swal('아이디는 숫자,영문자 조합으로 6~20자리를 사용해야 합니다.').then(function(){
+					$("#registerId").focus();
+				});
+				$("#ckIdcheckreg").val("0");
+				return false;
+			} else if(data == 0){
+				console.log("아이디 없음");
+				swal("사용할 수 있는 아이디 입니다.");
+				$("#ckIdcheckreg").val("1");
+			}
+		}
+	});
+}
+
+/*회원가입 버튼 아이디 중복 체크*/
+function loginIdCheckComplete(){
+	
+	var data = {"loginID" : $("#registerId").val()}
+	
+	var idRules =  /^[a-z0-9]{6,20}$/g ;
+	var id = $("#registerId").val();
+
+	/*callAjax시 로그인 여부 확인 하므로 ajax 함수 직접 작성*/
+	$.ajax({
+		url : '/check_loginID.do',
+		type : 'post',
+		data : data,
+		dataType : 'text',
 		async : false,
 		success : function(data) {
 			if (data == 1){
-				//$("#ckIdcheckreg").val("0");
-				check.checkLoginIdAndCheckRegisterId="0";
-				console.log("사용할 수 있는 아이디");
+				$("#ckIdcheckreg").val("0");
+				console.log("아이디 있음");
 				return false;
-			// } else if(!idRules.test($("#registerId").al())){
-			} else if(!idRules.test(id)){
-				//$("#ckIdcheckreg").val("0");
-				check.checkLoginIdAndCheckRegisterId="0";
+			} else if(!idRules.test($("#registerId").val())){
+				$("#ckIdcheckreg").val("0");
 				return false;
 			}
 		}
@@ -552,10 +434,12 @@ function loginIdCheckComplete(){
 
 /*-------  이메일 입력방식 선택  ------*/
 
+
+
+
 /*이메일 중복 체크*/
 function emailCheck(){
-	//var data = {"user_email" : $("#registerEmail").val()};
-	var data = {"userEmail" : check.email};
+	var data = {"user_email" : $("#registerEmail").val()};
 
 	$.ajax({
 		url : '/check_email.do',
@@ -565,18 +449,16 @@ function emailCheck(){
 		async : false,
 		success : function(data) {
 			if(data == 1){
-				//$("#ckEmailcheckreg").val("0");
-				check.checkEmailAndCheckRegister="0";
-				console.log("사용하고 있는 이메일");
+				$("#ckEmailcheckreg").val("0");
+				console.log("이메일 있음");
 				console.log(data);
 				return false;
 			} else {
-				//$("#ckEmailcheckreg").val("1");
-				check.checkEmailAndCheckRegister="1";
+				$("#ckEmailcheckreg").val("1");
 				console.log(data);
-				console.log("이메일 사용 가능");
+				console.log("이메일 없음");
 			}
-
+			
 		}
 	});
 }
@@ -585,44 +467,37 @@ function emailCheck(){
 function CompleteRegister() {
 
 	var param = document.getElementById("RegisterForm");
-
+	
     param.enctype = 'multipart/form-data';
-
+    
     var dataWithFile = new FormData(param);
 	/*패스워드 정규식*/
 	var passwordRules = /^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
- 	//var password = $("#registerPwd").val();
-	var passWord = check.passWord;
+ 	var password = $("#registerPwd").val();
  	/*이메일 정규식*/
 	var emailRules = /^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
-	//var email = $("#registerEmail").val();
-	var email = check.email;
-
+	var email = $("#registerEmail").val();
+	
 	/*전화번호 정규식*/
 	var tel1Rules = /^\d{2,3}$/;
 	var tel2Rules = /^\d{3,4}$/;
 	var tel3Rules = /^\d{4}$/;
-
-	// var tel1 = $("#tel1").val();
-	// var tel2 = $("#tel2").val();
-	// var tel3 = $("#tel3").val();
-	var tel1 = check.tel1;
-	var tel2 = check.tel2;
-	var tel3 = check.tel3;
+	
+	var tel1 = $("#tel1").val();
+	var tel2 = $("#tel2").val();
+	var tel3 = $("#tel3").val();
 	//console.log(div_cd);
-	console.log(check.divCd);
-
 	/* validation 체크 */
 	if(!RegisterVal()){
 		return;
 	}
-
+		
 	loginIdCheckComplete();
 	emailCheck();
-
+			 
 	//if (method == null || method == "") method = "post";
 	dataWithFile.append("empty", "empty");
-
+	
 	$.ajax({
 		url : "/register.do",
 		type : "POST",
@@ -634,17 +509,17 @@ function CompleteRegister() {
 		cache : false,
 		beforeSend: function(xhr) {
 			xhr.setRequestHeader("AJAX", "true");
-			$.blockUI({ message: '<h1><img src="/images/admin/comm/busy.gif" /> Just a moment...</h1>', T:99999 });
+			$.blockUI({ message: '<h1><img src="/images/admin/comm/busy.gif" /> Just a moment...</h1>', T:99999 }); 
 		},
-		success : function(data) {
+		success : function(data) { 
 			fSaveRegister(data);
 			alert("가입이 완료되었습니다.");
 		},
-		error : function(xhr, status, err) {
+		error : function(xhr, status, err) { 
 			console.log("xhr : " + xhr);
 			console.log("status : " + status);
 			console.log("err : " + err);
-
+			
 			if (xhr.status == 901) {
 				alert("로그인 정보가 없습니다.\n다시 로그인 해 주시기 바랍니다.");
 				location.replace('/login.do');
@@ -665,8 +540,7 @@ function CompleteRegister() {
 
 	if (data.result == "SUCCESS") {
 		//alert(data.resultMsg);
-		console.log("success" + data);
-		gfCloseModal();
+		//gfCloseModal();
 	} else {
 		//alert(data.resultMsg);
 		return false;
@@ -707,14 +581,10 @@ function execDaumPostcode(q) {
 			}
 
 			// 우편번호와 주소 정보를 해당 필드에 넣는다.
-			//document.getElementById('detailaddr').value = data.zonecode;
-			check.zipCode = data.zonecode;
-
-			//document.getElementById("loginaddr").value = addr;
-			 check.address = addr;
+			document.getElementById('detailaddr').value = data.zonecode;
+			document.getElementById("loginaddr").value = addr;
 			// 커서를 상세주소 필드로 이동한다.
-			//document.getElementById("loginaddr1").focus();
-			//document.getElementById("loginaddr1").focus();
+			document.getElementById("loginaddr1").focus();
 		}
 	}).open({
 		q : q
@@ -805,11 +675,11 @@ function SendEmail() {
 				}
 				else if (flag.result == "SUCCESS") {
 					swal("해당 이메일로 인증번호를 전송하였습니다.");
-
+					
 					$("#authNumId").val(flag);
 					$("#confirm").show();
 					findMailSendId();
-			}
+			} 
 		}
 	});
 }
@@ -834,27 +704,27 @@ function findMailSendId(){
 			console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
 		}
 	});
-
+	
 }
 
 /* 이메일 인증 */
 function SendComplete() {
  	var inputNum = $("#emailNum").val();
-	var emailNum = $("#authNumId").val();
+	var emailNum = $("#authNumId").val(); 
 	console.log(emailNum);
-
+	
 	if (inputNum.length < 1) {
 		swal("인증번호를 입력해주세요.");
 		return false;
-
+		
 	} else if (emailNum != inputNum) {
 		swal("인증번호가 틀렸습니다.");
 		return false;
 		}
-
+	
 	 else if (emailNum == inputNum) {
 		swal("인증 되었습니다.");
-
+		
 		// 아이디 메일 전송 함수호출
 		findId();
 	}
@@ -872,7 +742,7 @@ var findId = function() {
 		dataType : 'json',
 		async : false,
 		success : function(flag) {
-			// 모달 or span
+			// 모달 or span 
 			console.log(flag);
 			swal("귀하의 아이디는  " + flag.resultModel.loginID + " 입니다");
 			$("#emailText").val('');
@@ -890,12 +760,12 @@ var findId = function() {
 function RegisterIdCheck(){
 	var loginid = $("#emailIdText").val();
 
-
+	
 	var data = {
 			"loginID" :loginid
 	};
 	console.log(data);
-
+	
 	$.ajax({
 		url : "/registerIdCheck.do",
 		type : "post",
@@ -907,9 +777,9 @@ function RegisterIdCheck(){
 				swal("아이디를 입력해주세요.");
 				$("#loginEmail").hide();
 			}
-
+		
 			else if (data.result == "SUCCESS"){
-
+				
 				swal("아이디가 존재합니다.");
 				$("#loginEmail").show();
 			}else{
@@ -917,26 +787,26 @@ function RegisterIdCheck(){
 				swal("아이디가 존재하지 않습니다.");
 				$("#loginEmail").hide();
 			}
-
+			
 		}
-
+		
 	});
 }
 
 /* 이메일 기능 (비밀번호 기능)*/
 function SendPwdEmail() {
-
+	
 	var data = {
 		user_email : $("#emailPwdText").val(),
 		loginID : $("#emailIdText").val(),
 /* 		"data-code" : $("#emailPwdText").attr("data-code") */
 
 	};
-
+	
 	console.log(data);
-
-
-
+	
+	
+	
 	$.ajax({
 		url : "/selectFindInfoPw.do",
 		type : "post",
@@ -944,8 +814,8 @@ function SendPwdEmail() {
 		async : false,
 		data : data,
 		success : function(flag) {
-
-
+			
+			
 			if ($("#emailPwdText").val() == "") {
 				swal("이메일을 입력해주세요.");
 			} else if (flag.result == "FALSE") {
@@ -984,18 +854,18 @@ function findMailSendPwd(){
 			console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
 		}
 	});
-
+	
 }
 
 /* function pwdCheck(){
 	var email = $("#emailPwdText");
-
+	
 	if(email.length < 1){
 		alert("이메일을 입력해주세요.");
 	}
 }
  */
-
+ 
 /* 이메일 비밀번호 인증 */
 function SendCompletePwd() {
 	var inputPwd = $("#emailPwdNum").val();
@@ -1112,7 +982,7 @@ function fSaveDataResult(data) {
 	}
 }
 
-
+	
 </script>
 </head>
 <body>
@@ -1159,6 +1029,7 @@ function fSaveDataResult(data) {
 				<a href="javascript:fRegister();" id="RegisterBtn"
 					name="modal"><strong>[회원가입]</strong></a>
 					<a href="javascript:findIdPwd();"><strong>[아이디/비밀번호 찾기]</strong></a>
+				<a href="/login/registerVue">[회원가입2222]</a>
 			</fieldset>
 			</div>
 		</div>
@@ -1169,9 +1040,9 @@ function fSaveDataResult(data) {
 
 	<div id="layer1" class="layerPosition layerPop layerType2" style="width: 600px;">
       <form id="RegisterForm" action="" method="post">
-	      <input type="hidden" name="action" id="action" value="" v-model="action">
-	      <input type="hidden" name="ckIdcheckreg" id="ckIdcheckreg" v-model="checkLoginIdAndCheckRegisterId" value="0"/>
-	      <input type="hidden" name="ckEmailcheckreg" id="ckEmailcheckreg" v-model="checkEmailAndCheckRegister" value="0"/>
+	      <input type="hidden" name="action" id="action" value="">
+	      <input type="hidden" name="ckIdcheckreg" id="ckIdcheckreg" value="0"/>
+	      <input type="hidden" name="ckEmailcheckreg" id="ckEmailcheckreg" value="0"/>	
 		<dl>
 			<dt>
 					<br>
@@ -1182,8 +1053,7 @@ function fSaveDataResult(data) {
 			<dd class="content">
 				<div class="btn_areaC">
 					<a href="javascript:instaffRegister();" class="btnType blue" id="register_instaff"><span>학생회원</span></a>
-					<a href="javascript:outstaffRegister();" class="btnType" id="regster_outstaff"><span>강사회원</span></a>
-<%--					<a href="" class="btnType" id="register_outstaff2" @click="outstaffRegister2();"><span>뷰강사회원</span></a>--%>
+					<a href="javascript:outstaffRegister();" class="btnType " id="register_outstaff"><span>강사회원</span></a>
 					<br>
 					<br>
 				</div>
@@ -1195,27 +1065,26 @@ function fSaveDataResult(data) {
 						<col width="*">
 						<col width="120px">
 						<col width="*">
-						<col width="120px">
+						<col width="120px">					
 					</colgroup>
 						<tbody>
 							<tr class="hidden">
-								<td><input type="text" name="div_cd" id="div_cd" v-model="divCd" /></td>
-								<td><input type="text" name="del_cd" id="del_cd" v-model="delCd" /></td>
-						 		<td><input type="text" name="user_type" id="user_type" v-model="userType"/></td>
-								<td><input type="text" name="approval_cd" id="approval_cd" v-model="approvalCd"/></td>
+								<td><input type="text" name="div_cd" id="div_cd" /></td>
+								<td><input type="text" name="del_cd" id="del_cd" /></td>
+						 		<td><input type="text" name="user_type" id="user_type" /></td> 
+								<td><input type="text" name="approval_cd" id="approval_cd" /></td>
 							</tr>
+							
 							<tr>
-								<th scope="row" id="stuCk" v-show="stuCk">학생가입</th>
-								<th scope="row" id="teaCk" v-show="teaCk">강사 가입</th>
+								<th scope="row" id="stuCk">학생 가입</th>
+								<th scope="row" id="teaCk">강사 가입</th>
 							</tr>
-
-
-
+							
 							<tr>
 								<th scope="row">아이디<span class="font_red">*</span></th>
 								<td colspan="2"><input type="text" class="inputTxt p100"
 									name="loginID" placeholder="숫자, 영문자 조합으로 6~20자리 "
-									id="registerId" v-model="registerId" /></td>
+									id="registerId" v-model="loginId" /></td>
 								<td><input type="button" value="중복확인"
 									onclick="loginIdCheck()" style="width: 130px; height: 20px;" /></td>
 							</tr>
@@ -1230,14 +1099,14 @@ function fSaveDataResult(data) {
 								<th scope="row" style="padding: 0 0">비밀번호 확인<span
 									class="font_red">*</span></th>
 								<td colspan="3"><input type="password"
-									class="inputTxt p100" name="password1" id="registerPwdOk" v-model="registerPwdOk" /></td>
+									class="inputTxt p100" name="password1" id="registerPwdOk" /></td>
 							</tr>
-
+							
 							<tr>
 								<th scope="row" id="registerName_th">이름 <span class="font_red">*</span></th>
 								<td><input type="text" class="inputTxt p100" name="name"
 									id="registerName" v-model="name" /></td>
-
+							
 								<th scope="row" id="rggender_th">성별</th>
 								<td id="rggender_td">
 								<select name="gender_cd" id="gender_cd" style="width: 128px; height: 28px;" v-model="gender">
@@ -1257,11 +1126,11 @@ function fSaveDataResult(data) {
 								<th scope="row">이메일<span class="font_red">*</span></th>
 									<td colspan="3"><input type="text" class="inputTxt p100"
 									name="user_email" id="registerEmail" v-model="email" />
-
-								<td colspan="3">
-
+									
+								<td colspan="3">	
+									
 								</td>
-
+									
 							</tr>
 
 							<tr>
@@ -1297,42 +1166,43 @@ function fSaveDataResult(data) {
 							<tr id="resumecheck">
 								<th scope="row">이력서제출여부</th>
 								<td><input type="radio" id="radio2-1"
-									name="student_resume_yn" id="student_resume_yn_1" value='Y'/> <label for="radio1-1">사용</label>
+									name="student_resume_yn" id="student_resume_yn_1" value='Y' /> <label for="radio1-1">사용</label>
 									&nbsp;&nbsp;&nbsp;&nbsp; <input type="radio" id="radio2-2"
-									name="student_resume_yn" id="student_resume_yn_2" value="N"/> <label for="radio1-2">미사용</label>
+									name="student_resume_yn" id="student_resume_yn_2" value="N" /> <label for="radio1-2">미사용</label>
 								</td>
-<%--								 추가 --%>
-								<td><input type="hidden" v-model="resumeCheck"></td>
 							</tr>
-
+			
 				</table>
-
-					<table class="row" id="filetable" v-show="fileTable">
+					
+					<table class="row" id="filetable">
 						<tr>
 							<th scope="row" >이력서<span class="font_red">*</span></th>
 								<td colspan="5">
-									<input type="file" name="resume" id="resume" ></input>
+									<input type="file" name="resume" id="resume"  ></input>
 								</td>
-						</tr>
+						</tr>	
 					</table>
+				
+				
+				
 
+							
+					
 				<div class="btn_areaC mt30">
-					<a class="btnType blue" id="RegisterCom" name="btn"> <span @click="CompleteRegister">회원가입 완료</span></a>
-					<a href="javascript:fcancleModal()" class="btnType gray" id="btnCloseLsmCod" name="btn"><span>취소</span></a>
+					<a href="javascript:CompleteRegister();" class="btnType blue"
+						id="RegisterCom" name="btn"> <span>회원가입 완료</span></a> <a 
+						href="javascript:fcancleModal()" class="btnType gray" id="btnCloseLsmCod" name="btn"><span>취소</span></a>
 				</div>
 			</dd>
 		</dl>
 		<a href="" class="closePop"><span class="hidden">닫기</span></a>
-	</form>
+	</form>	
 	</div>
-
-
-
 
 
 <!-- 아이디 비밀번호 찾기 모달 -->
 <form id="sendForm" action="" method="post">
-	<input type="hidden" name="authNumId" id="authNumId" value="" />
+	<input type="hidden" name="authNumId" id="authNumId" value="" /> 
 	<input type="hidden" name="authNumPwd" id="authNumPwd" value="" />
 	<input type="hidden" name="ckIdcheck" id="ckIdcheck" value=""/>
 	<div id="layer2" class="layerPop layerType2" style="width: 750px;">

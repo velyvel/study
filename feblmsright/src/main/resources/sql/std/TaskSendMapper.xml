@@ -17,7 +17,7 @@
                   , le.lecture_end as lectureEnd
 			  from tb_student sd 
 			       inner join tb_lecture le on le.lecture_seq = sd.lecture_seq
-			       inner join tb_detail_code dc on le.lecture_no = dc.detail_code
+				   inner join tb_detail_code dc on dc.group_code = 'lecture_no' and le.lecture_no = dc.detail_code
 			       inner join tb_userinfo ui on le.loginID = ui.loginID
 			where sd.loginID = #{loginid} and le.lecture_confirm = "N"  
 			                              and sd.student_lecture = "Y"

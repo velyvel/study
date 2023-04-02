@@ -59,7 +59,7 @@
 
 				switch (btnId) {
 					case 'btnSearchLecture':
-						lectureListSearch();
+						fn_Searchlecture();
 						break;
 					// case 'btnSaveLecture' :
 					// 	studentInsert();
@@ -78,7 +78,7 @@
 					//lectureName: selectbox id 값
 					lectureName : "",
 					//검색창 id값
-					searchWord : "",
+					maxMember : "",
 				}
 			});
 
@@ -146,8 +146,6 @@
 
 				lectureListArea.listItem = listData.lectureListSearch;
 				lectureListArea.totalCnt = listData.totalcnt;
-
-				//TODO 데이터 없을때 페이지 만들지 않는 로직 추가
 
 				var paginationHtml = getPaginationHtml(pageNum, lectureListArea.totalCnt, lectureListArea.pageSize, lectureListArea.blockSize, 'showLectureList');
 
@@ -224,9 +222,6 @@
 
 		function insertStudent(){
 
-			//TODO : 수강신청 완료 alert띄우고 모달닫기
-
-
 			var param = {
 				action : "I",
 				lectureSeq : lectureListArea.lectureSeq,
@@ -297,7 +292,7 @@
 
 
 								마감인원
-		     	                <input type="text" style="width: 300px; height: 25px;" id="searchWord" name="searchWord" v-model="searchWord" onkeyup="showLectureList()">
+		     	                <input type="text" style="width: 300px; height: 25px;" id="searchWord" name="searchWord" v-model="maxMember" onkeyup=" if(event.keycode !=null){fn_Searchlecture()}">
 			                    <a href="" class="btnType blue" id="btnSearchLecture" name="btn"><span>검  색</span></a>
 							</span>
 						</p>
