@@ -33,7 +33,7 @@
 	
 	/** OnLoad event */ 
 	$(function() {
-		
+		console.log($("#bkpagenum").val())
 		
 		init();
 		
@@ -110,8 +110,9 @@
 				test_no : 0,
 				test_title : "",
 				action : "",
-				loginID : $("#loginID").val(),
-				lecture_seq : $("#lecture_seq").val(),
+				tdisflag : false,
+				//loginID : $("#loginID").val(),
+				//lecture_seq : $("#lecture_seq").val(),
 			},
 			
 		});
@@ -129,7 +130,8 @@
 				question_three : "",
 				question_four : "",
 				action : "",
-				bkpagenum : $("#bkpagenum").val(),
+				qdisflag : false,
+				//bkpagenum : $("#bkpagenum").val(),
 				//qtest_no : 0,
 				
 			},
@@ -213,10 +215,7 @@
 	
 	function questionListSearch(testno) {
 		
-		//tsearcharea.tflag = false;
-		//tlistarea.tflag = false;
-		
-		exList.testno = testno; // brest_no...?
+		exList.testno = testno; // btest_no...?
 		
 		questionSearch();
 	}
@@ -238,18 +237,9 @@
 			exList.listitem = treturndata.questionList
 			exList.totalcnt = treturndata.qtotalcnt
 			
-			//$("#tbodyQuestionList").empty().append(treturndata);
-
-			//var qtotalcnt = $("#qtotalcnt").val();
-
-			/* var paginationHtml = getPaginationHtml(pagenum, qtotalcnt,
-					pageSizeQuestion, pageBlockSizeQuestion, 'questionSearch');
-			console.log("paginationHtml : " + paginationHtml);
-			//swal(paginationHtml);
-			$("#itemListPagination").empty().append(paginationHtml);
-
-			$("#bkpagenum").val(pagenum); */
-
+			//var paginationHtml = getPaginationHtml(pagenum, exList.totalcnt, exList.pagesize, exList.blocksize, 'questionSearch');
+			//exList.pagenavi = paginationHtml;
+			
 		};
 
 		callAjax("/tut/vuequestionList.do", "post", "json", "true", param,
@@ -259,14 +249,13 @@
 	
 	/* 시험관리 신규등록 모달  */
 	function fn_testRegPopup(test_no) {
+			
 			// 폼 초기화
 			fn_initForm();
 
 			// 모달 팝업
 			gfModalPop("#layer1");
 
-			console.log(layer1.action);
-			//fn_selectTest(test_no);
 	}
 	
 	/* 시험관리 디테일 */
@@ -287,7 +276,6 @@
 			gfModalPop("#layer1");
 			selectComCombo("lecseqbyuser", "lecseqbyuserall", "all", "");  
 			 
-			
 		}
 
 		callAjax("/tut/testDetail.do", "post", "json", "true", param,
@@ -300,26 +288,19 @@
 
 		if (object == "" || object == null || object == undefined) {
 			layer1.action="I";
+			layer1.tdisflag = false;
 
 			layer1.test_no = ""; // << test 숫자 입력창 초기값을 0으로 할당?
 			layer1.test_title = "";
 			
-			//console.log("insert : Y ");
-			//$("#test_no").val("");
-			//$("#test_title").val("");
-			//$("#btnDeleteRoom").hide();
-
 		} else {
 			layer1.action="U";
+			layer1.tdisflag = true;
 			
 			
 			layer1.test_no = object.test_no;
 			layer1.test_title = object.test_title;
 
-			//$("#test_no").val(selectTest.test_no);
-			//$("#test_title").val(selectTest.test_title);
-			//$("#btnDeleteRoom").show();
-			
 		}
 	}
 	
@@ -332,9 +313,9 @@
 		var param = {
 			action : layer1.action,
 			test_no : layer1.test_no,
-			loginID : layer1.loginID,
-			lecture_seq : layer1.lecture_seq,
-			test_title : layer1.test_title
+			test_title : layer1.test_title,
+			//loginID : layer1.loginID,
+			//lecture_seq : layer1.lecture_seq
 			
 		};
 
@@ -357,29 +338,12 @@
 	
 	/* 시험문제(question) 모달 */
 	function fn_questionPopup(test_no,question_no) {
-
-		//if (test_no == "" || test_no == null || test_no == undefined) {
-
-			//var btest_no = exList.testno;
-			
-			//console.log(btest_no);
-			
-			//if (btest_no == "" || btest_no == null || btest_no == undefined) {
-			//	alert("시험을 먼저 선택해 주세요.");
-			//	return;
-			//}
-
-			//layer2.action="I";
-
+		
+			//시험문제(question) 폼 초기화
 			fn_initQuestionForm();
 
 			// 모달 팝업
 			gfModalPop("#layer2");
-		//} else {
-		//	layer2.action="U";
-
-		//	fn_selectQuestion(test_no,question_no);
-		//}
 
 	}
 	
@@ -393,6 +357,7 @@
 		if (object == "" || object == null || object == undefined) {
 			
 			layer2.action = "I";
+			layer2.qdisflag = false;
 			
 			layer2.question_no = ""; 
 			layer2.question_ex = "";
@@ -409,6 +374,7 @@
 		} else {
 			
 			layer2.action = "U";
+			layer2.qdisflag = true;
 
 			layer2.question_no = object.question_no;
 			layer2.question_ex = object.question_ex;
@@ -419,9 +385,6 @@
 			layer2.question_four = object.question_four;
 			layer2.question_score = object.question_score;
 			
-			
-			
-			//$("#btnDeleteQuestion").show();
 		}
 	}
 	
@@ -474,8 +437,11 @@
 			
 			gfCloseModal();
 			
+			//questionListSearch($("#qtest_no").val());
+			//questionSearch($("#bkpagenum").val());
+			
 			questionListSearch(test_no);
-			questionSearch(bkpagenum);
+			questionSearch(exList.cpage);
 		};
 
 		callAjax("/tut/questionSave.do", "post", "json", "true", param,
@@ -483,6 +449,16 @@
 		
 	};
 	
+ 	function fn_Validateitem() {
+		var chk = checkNotEmpty([ [ "question_ex", "문제를 입력해 주세요." ],
+				[ "question_answer", "정답을 입력해 주세요" ] ]);
+
+		if (!chk) {
+			return;
+		}
+
+		return true;
+	}
 
 </script>
 
@@ -662,7 +638,7 @@
 									</tbody>
 								</template>
 							</table>
-						<div class="paging_area"  id="questionListPagination"> </div>
+						<!-- <div class="paging_area"  id="questionListPagination" v-html="pagenavi"> </div> -->
 						</div>
 	
 						</div><!-- div question 의 끝 -->
@@ -721,7 +697,7 @@
 
 				<div class="btn_areaC mt30">
 					<a href="" class="btnType blue" id="btnSaveTest" name="btn"><span>저장</span></a> 
-					<a href="" class="btnType blue" id="btnDeleteTest" name="btn"><span>삭제</span></a> 
+					<a href="" class="btnType blue" id="btnDeleteTest" name="btn" v-show="tdisflag"><span>삭제</span></a> 
 					<a href=""	class="btnType gray"  id="btnCloseTest" name="btn"><span>취소</span></a>
 				</div>
 			</dd>
@@ -795,7 +771,7 @@
 
 				<div class="btn_areaC mt30">
 					<a href="" class="btnType blue" id="btnSaveQuestion" name="btn"><span>저장</span></a>
-					<a href="" class="btnType blue" id="btnDeleteQuestion" name="btn"><span>삭제</span></a>  
+					<a href="" class="btnType blue" id="btnDeleteQuestion" name="btn" v-show="qdisflag"><span>삭제</span></a>  
 					<a href="" class="btnType gray" id="btnCloseQuestion" name="btn"><span>취소</span></a>
 				</div>
 			</dd>

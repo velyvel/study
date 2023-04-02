@@ -219,7 +219,7 @@
 											<th scope="col"></th>
 										</tr>
 									</thead>
-									<tbody id="tbodyLectureList"></tbody>
+									<tbody id="tbodyLectureList"></tbody> 
 								</table>
 							<div class="paging_area"  id="lectureListPagination"> </div>
 						</div>

@@ -17,6 +17,8 @@ public class SurveyModel {
 	private String lecture_start;
 	private String lecture_end;
 	private int lecture_seq;
+	private int lecture_person;
+	private int result;
 	
 	// 설문조사 결과
 	private int servey_no;
@@ -86,6 +88,18 @@ public class SurveyModel {
 	}
 	public void setLecture_seq(int lecture_seq) {
 		this.lecture_seq = lecture_seq;
+	}
+	public int getLecture_person() {
+		return lecture_person;
+	}
+	public void setLecture_person(int lecture_person) {
+		this.lecture_person = lecture_person;
+	}
+	public int getResult() {
+		return result;
+	}
+	public void setResult(int result) {
+		this.result = result;
 	}
 	public int getServey_no() {
 		return servey_no;

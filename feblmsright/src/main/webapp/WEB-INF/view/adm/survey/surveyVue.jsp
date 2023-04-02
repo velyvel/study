@@ -188,6 +188,8 @@
 	// 설문조사 강사 목록 조회
 	function surveyTeacherList(pageNum) {
 		
+		lectureList.divLectureList = false;
+		
 		pageNum = pageNum || 1;
 		
 		var param = {
@@ -236,7 +238,8 @@
 				pageNum : pageNum,
 				pageSize : pageSizeLecture,
 				loginID : lectureList.loginID,
-				lsearch : lectureList.lsearch
+				lsearch : lectureList.lsearch,
+		//		lecture_seq : 
 		}
 		
 		var lectureListCallBack = function(data){
@@ -465,7 +468,7 @@
 											<td>{{item.name}}</td>
 											<td>{{item.lecture_start}}</td>
 											<td>{{item.lecture_end}}</td>
-											<td></td>
+											<td>{{item.result}}/{{item.lecture_person}}</td>
 										</tr>
 									</tbody>
 								</template>

@@ -206,6 +206,7 @@
 				reply_content : ""
 			}
 		});
+		
 		//qna 저장, 수정, 삭제 관련 Vue
 		newqna = new Vue({
 			el : "#layer1",
@@ -280,6 +281,7 @@
 		
 		var listcallback = function(returnData){
 			console.log("returnData : " + JSON.stringify(returnData));
+			console.log("newqna.action : " + newqna.action)
 			
 			qnadataillista(returnData);
 		}
@@ -318,6 +320,10 @@
 		newqna.qna_date = data.qnainfo.qna_date;
 		newqna.qna_content = data.qnainfo.qna_content;
 		console.log("newqna : ", newqna)
+		if(newqna.action === "U"){
+			qnadcontent.show = true;
+			replydata.show = true;
+		}
 	}
 	
 	//댓글리스트
@@ -352,12 +358,10 @@
 				loginID : replyform.loginID,
 				reply_content : replyform.reply_content
 		}
-		console.log(param);
 		
 		var saveCallBack = function (data){
 			gfCloseModal();
-			location.reload();
-			replysearchlist();
+			replysearchlist(replyform.qnano);
 		}
 		
 		callAjax("/all/replysave.do", "post", "json", "false", param, saveCallBack);
@@ -411,13 +415,21 @@
 		
 		var saveCallBack = function(data){
 			gfCloseModal();
-			location.reload();
-			replysearchlist();
+			qnasearchlist();
+			replysearchlist(newqna.qna_no);
+			
+			if(newqna.action === "U"){
+				qnalistsearch();
+			}
 		}
+		
+		alert("저장되었습니다.");
 		
 		console.log("param : ", param);
 		
 		callAjax("/all/qnasave.do", "post", "json", "false", param, saveCallBack);
+		
+		
 	}
 	
 	

@@ -15,7 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import kr.happyjob.study.common.comnUtils.ComnCodUtil;
@@ -176,7 +179,6 @@ public class LoginController {
       
       return mav;
    }
-
    /*회원가입*/
    @RequestMapping("register.do")
    @ResponseBody
@@ -192,9 +194,7 @@ public class LoginController {
 		
 		if("I".equals(action)){
 			loginService.registerUser(paramMap, request, session);
-		}
-
-       logger.info("+ 회원가입 " + className + "시작입니다");
+		} 
 		
 		returnmap.put("result", "SUCCESS");
 		
@@ -210,15 +210,11 @@ public class LoginController {
    public int check_loginID(LgnInfoModel model) throws Exception{
 	   
 	   logger.info("+ Start " + className + ".loginID_check");
-       System.out.println(" 데이터 " + model);
-	   System.out.println("받은 데이터 : "+model);
 	   int result = loginService.check_loginID(model);
 	   logger.info("+ End " + className + ".loginID_check");
 	   return result;
-
-
    }
-
+   
    /*이메일 중복체크*/
    @RequestMapping(value="check_email", method=RequestMethod.POST)
    @ResponseBody

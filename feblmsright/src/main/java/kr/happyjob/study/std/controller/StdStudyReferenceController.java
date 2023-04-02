@@ -100,6 +100,42 @@ public class StdStudyReferenceController {
 	}
 	
 	/**
+	* 강의 목록 조회
+	*/
+	@RequestMapping("vueLectureList.do")
+	@ResponseBody
+	public Map <String, Object> vueLectureList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+			HttpServletResponse response, HttpSession session) throws Exception {
+		
+		logger.info("+ Start " + className + ".vueLectureList");
+		logger.info("   - paramMap : " + paramMap);
+		
+		Map<String,Object> resultMap = new HashMap<String, Object>();
+		
+		
+		int pagenum =Integer.parseInt(String.valueOf(paramMap.get("pagenum")));
+		int pageSize =Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+		int startnum = (pagenum - 1) * pageSize;
+		
+		paramMap.put("startnum", startnum);
+		paramMap.put("pageSize", pageSize);
+		
+		paramMap.put("loginID", session.getAttribute("loginId"));
+		
+		List<StdStudyReferenceModel> LectureList = stdStudyReferenceService.LectureList(paramMap);
+		int totalcnt = stdStudyReferenceService.LectureListCnt(paramMap);
+		
+		resultMap.put("LectureList", LectureList);
+		resultMap.put("totalcnt", totalcnt);
+		
+		logger.info("+ End " + className + ".vueLectureList");
+		
+		return resultMap;
+		
+		//return "std/studyReference/LectureList";
+	}
+	
+	/**
 	 * 학습자료 목록 조회
 	 */
 	@RequestMapping("referenceselectlist.do")

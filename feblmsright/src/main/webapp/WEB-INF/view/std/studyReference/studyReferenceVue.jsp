@@ -23,26 +23,47 @@
 	var pageSizeReferenceList = 5;
 	var pageBlockSizeReferenceList = 10;
 	
+	var studyReference;
 	
 	/** OnLoad event */ 
 	$(function() {
-		comcombo("lecture_no", "lecturename", "all", "");
 		
+	
 		// 버튼 이벤트 등록
-		fRegisterButtonClickEvent();
+		fRegisterButtonClickEvent();  
+	
+	
+		init(); 
+		LectureList();  //강의목록
+	
 	});
 	
-	console.log("selectComCombo : "+JSON.stringify(selectComCombo));  ////
+	function init(){
+		
+		 searchArea = new Vue({
+								el : "#searchArea",
+								data : {
+									lectureName : "",								
+								}
+		});
+		
+		 studyReference = new Vue({
+			 
+			 						el : "#studyReferenceList",
+			 						data : {
+			 							item : [],
+			 							totalCnt : 0,
+			 							cPage : 0,
+			 							pageNav : "",
+			 							lectureseq : 0,
+			 						},
+		 });
+		
+		 
+		comcombo("lecture_no", "lecturename", "all", "");
+		
+	}
 	
-	// 버튼 이벤트 등록
-	fRegisterButtonClickEvent();   ////
-	
-	init();  /////
-	
-	lectureList();  //강의목록
-	
-	
-
 	/** 버튼 이벤트 등록 */
 	function fRegisterButtonClickEvent() {
 		$('a[name=btn]').click(function(e) {
@@ -61,7 +82,31 @@
 		});
 	}
 	
-	
+	function LectureList(pagenum){
+		
+		pagenum = pagenum || 1;
+		
+		var param = {
+				
+				pagenum : pagenum,
+				pageSize : pageSizeReference,
+				lectureNameSearch : searchArea.lectureName,
+		}
+		var listcallback = function(returndata) {
+			console.log("returndata : " + JSON.stringify(returndata));
+			studyReference.item=returndata.LectureList;
+			studyReference.totalCnt=returndata.totalcnt;
+			studyReference.cPage=pagenum;
+			
+			var paginationHtml = getPaginationHtml(pagenum, returndata.totalcnt, pageSizeReferenceList, pageBlockSizeReferenceList, 'fn_referenceselectlist');
+			
+			studyReference.pageNav=paginationHtml;
+			
+			}
+		
+		callAjax("/std/vueLectureList.do", "post" , "json", "false", param, listcallback);
+		
+		}
 </script>
 
 </head>
@@ -108,7 +153,7 @@
 							</span>
 						</p>
 						
-						<div class="lectureReferenceList">
+						<div class="lectureReferenceList" id="studyReferenceList">
 							
 							<table class="col">
 								<caption>caption</caption>
@@ -127,10 +172,29 @@
 										<th scope="col">비고</th>
 									</tr>
 								</thead>
-								<tbody id="Reference"></tbody>
+								<template v-if="tatalCnt == 0">
+									<tbody>
+										<tr>
+											<td colspan="4">데이터가 존재하지 않습니다.</td>
+										</tr>
+									</tbody>
+								</template>
+								<template v-else>
+									<tbody v-for="(item,index) in item">
+										<tr>
+											<td>{{item.lecture_name}}</td>
+											<td>{{item.lecture_start}}</td>
+											<td>{{item.lecture_end}}</td>
+											<td><a href="" @click.prevent="fn_referenceselect(item.lecture_seq)"><span>목록</span></a></td>
+										</tr>
+									</tbody>
+								</template>
+								
+								<!-- <tbody id="Reference"></tbody> -->
+								
 							</table>
 	
-						<div class="paging_area"  id="referencePagination"> </div>
+						<div class="paging_area"  id="referencePagination" v-html="pageNav"> </div>
 						</div>
 						
 						<br/>

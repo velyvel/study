@@ -94,6 +94,36 @@ public class RegSubjectController {
 
 		return "std/regSubject/regSubjectList";
 	}
+	
+	// 수강목록 조회
+		@RequestMapping("vueregSubjectList.do")
+		@ResponseBody
+		public Map<String, Object> vueregSubjectList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+				HttpServletResponse response, HttpSession session) throws Exception {
+			logger.info("+ Start " + className + ".vueregSubjectList");
+			logger.info("   - paramMap : " + paramMap);
+
+			Map<String, Object> returnmap = new HashMap<String, Object>();
+			
+			int pageNum = Integer.parseInt(String.valueOf(paramMap.get("pageNum")));
+			int pageSize = Integer.parseInt(String.valueOf(paramMap.get("pageSize")));
+			int startPage = (pageNum - 1) * pageSize;
+
+			paramMap.put("pageSize", pageSize);
+			paramMap.put("startPage", startPage);
+
+			paramMap.put("loginID", session.getAttribute("loginId"));
+			
+			List<RegSubjectModel> regSubjectList = regSubjectService.regSubjectList(paramMap);
+			int totalCnt = regSubjectService.regSubjectListCnt(paramMap);
+
+			returnmap.put("regSubjectList", regSubjectList);
+			returnmap.put("totalCnt", totalCnt);
+			
+			logger.info("+ End " + className + ".vueregSubjectList");
+
+			return returnmap;
+		}
 
 	// 강의 목표 및 강의 계획서 조회
 	@RequestMapping("lecturePlanList.do")
@@ -116,6 +146,31 @@ public class RegSubjectController {
 
 		return "std/regSubject/lecturePlanList";
 	}
+	
+	// 강의 목표 및 강의 계획서 조회
+		@RequestMapping("vuelecturePlanList.do")
+		@ResponseBody
+		public Map<String, Object> vuelecturePlanList(Model model, @RequestParam Map<String, Object> paramMap, HttpServletRequest request,
+				HttpServletResponse response, HttpSession session) throws Exception {
+
+			logger.info("+ Start " + className + ".vuelecturePlanList");
+			logger.info("   - paramMap : " + paramMap);
+			
+			Map<String, Object> returnmap = new HashMap<String, Object>();
+			
+			List<RegSubjectModel> lecturePlanList = regSubjectService.lecturePlanList(paramMap);
+			//List<RegSubjectModel> lectureGoalList = regSubjectService.lectureGoalList(paramMap);
+			
+			int totalCnt = regSubjectService.lecturePlanListCnt(paramMap);
+
+			returnmap.put("lecturePlanList", lecturePlanList);
+			//model.addAttribute("lectureGoalList", lectureGoalList);
+			returnmap.put("totalCnt", totalCnt);
+
+			logger.info("+ End " + className + ".vuelecturePlanList");
+
+			return returnmap;
+		}
 
 	// 설문조사 문항 목록 조회
 	@RequestMapping("surveyQuestionList.do")
@@ -132,6 +187,27 @@ public class RegSubjectController {
 		logger.info("+ End " + className + ".surveyQuestionList");
 
 		return "std/regSubject/surveyQuestionList";
+	}
+	
+
+	// 설문조사 문항 목록 조회
+	@RequestMapping("vuesurveyQuestionList.do")
+	@ResponseBody
+	public Map<String, Object> vuesurveyQuestionList(Model model, @RequestParam Map<String, Object> paramMap,
+			HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
+
+		logger.info("+ Start " + className + ".vuesurveyQuestionList");
+		logger.info("   - paramMap : " + paramMap);
+		
+		Map<String, Object> returnmap = new HashMap<String, Object>();
+		
+		List<RegSubjectModel> surveyQuestionList = regSubjectService.surveyQuestionList(paramMap);
+
+		returnmap.put("surveyQuestionList", surveyQuestionList);
+
+		logger.info("+ End " + className + ".vuesurveyQuestionList");
+
+		return returnmap;
 	}
 
 	// 설문 조사 저장
@@ -160,7 +236,7 @@ public class RegSubjectController {
 			paramMap.put("servey_no", 1);
 
 			// insert
-
+			
 			regSubjectService.saveSurvey(paramMap);
 		}
 

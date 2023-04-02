@@ -24,7 +24,7 @@
 	var pageBlockSizetestResultStudent = 10;
 	
 	var testResult;
-	
+	var divtestResult;
 	
 	/** OnLoad event */ 
 	$(function() {
@@ -81,8 +81,14 @@
 		});
 		
 		divtestResult = new Vue ({
-									el : ""
-			
+									el : "#divtestResultStudent",
+									data : {
+											item : [],
+											stotalCnt : 0,
+											cPage : 0,
+											pageNav : "",
+											show : false,
+									}	
 		});
 		
 	
@@ -112,19 +118,43 @@
 			
 		}
 		callAjax("/tut/vueTestResultLectureList.do", "post", "json", "false", param, listcallback);
+		
+		divtestResult.show=false;
 	}
 	
 	function fn_testStudentList(lectureNo){
 		
 		testResult.lectureNo=lectureNo;
-		alert("testResult.lectureNo : "+testResult.lectureNo); 
-	//	fn_testStudentSelectList();
+		//alert("testResult.lectureNo : "+testResult.lectureNo); 
+		fn_testStudentSelectList();
 		
+		divtestResult.show=true;
+				
 	}
 	
 	function fn_testStudentSelectList(pagenum){
 		
+		pagenum = pagenum || 1;
 		
+		var param = {
+				
+				pagenum : pagenum,
+				pageSize : pageSizetestResultStudent,
+				lectureNo : testResult.lectureNo,
+		}
+		
+		var listcallback = function(returndata){
+			console.log("returndata0 : " + JSON.stringify(returndata));
+			divtestResult.item=returndata.testStudentSelectList;
+			divtestResult.stotalCnt=returndata.totalcnt;
+			divtestResult.cPage=pagenum;
+			
+			var paginationHtml = getPaginationHtml(pagenum, returndata.totalcnt, pageSizetestResultStudent, pageBlockSizetestResultStudent, 'fn_testStudentSelectList');
+			
+			divtestResult.pageNav=paginationHtml;
+			
+		}
+		callAjax("/tut/vueTestStudentSelectList.do", "post" , "json", "false", param, listcallback);
 	}
 	
 	
@@ -212,8 +242,8 @@
 											<td>{{item.name}}</td>
 											<td>{{item.test_no}}</td>
 											<td>{{item.lecture_person}}</td>
-											<td>{{item.AFT}}</td>
-											<td>{{item.BEF}}</td>
+											<td>{{item.aft}}</td>
+											<td>{{item.bef}}</td>
 										</tr>
 									</tbody>
 								</template>
@@ -225,7 +255,7 @@
 						<br/>
 						<br/>
 						
-						<div id="divtestResultStudent">
+						<div id="divtestResultStudent" v-show="show">
 							
 							<table class="col">
 								<caption>caption</caption>
@@ -237,6 +267,7 @@
 								</colgroup>
 	
 								<thead>
+							
 									<tr>
 										<th scope="col">학생 ID</th>
 										<th scope="col">학생 이름</th>
@@ -244,10 +275,35 @@
 										<th scope="col">합격상태</th>
 									</tr>
 								</thead>
-								<tbody id="listtestResultStudent"></tbody>
+								
+									<template v-if="stotalCnt == 0">
+									<tbody>
+										<tr>
+											<td colspan="5">데이터가 존재하지 않습니다.</td>
+										</tr>
+									</tbody>
+								</template>
+								<template v-else>
+									<tbody v-for="(item,index) in item">
+										<tr>
+											<td>{{item.loginID}}</td>
+											<td>{{item.name}}</td>
+											<td>{{item.score}}</td>									
+										<td><template v-if="item.score >=60">
+                                  			
+                                       			<div>통과</div>
+                                  			</template>	
+                                  			
+                                  			<template v-else>
+                                     				<div>과락</div>
+                              				</template>
+                              			</td>
+								</template>
+								
+							 <!-- <tbody id="listtestResultStudent"></tbody> -->
 							</table>
 	
-						<div class="paging_area"  id="testResultStudentPagination"> </div>
+						<div class="paging_area"  id="testResultStudentPagination" v-html="pageNav"> </div>
 						</div>
 						
 						

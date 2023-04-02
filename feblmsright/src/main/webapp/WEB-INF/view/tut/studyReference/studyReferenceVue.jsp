@@ -74,6 +74,8 @@
 				blocksize : 10, // 네비게이션으로 5개씩 나오게
 				pagenavi : "", // vhtml 연결할 놈이어서 str로 초기화
 				lectureseq : 0,
+				cdisflag : false,
+				newreferenceno : 0,
 			},
 			methods : {
 				fn_referencemodify : function(reference_no) {
@@ -88,12 +90,14 @@
  		layer1 = new Vue({
 			el : "#layer1",
 			data : {
-				lectureseq : 0,
+				lecture_seq : 0,
 				newreferenceno : 0,
 				reference_title : "",
 				reference_content : "",
 				reference_file : "",
 				action : "",
+				lectureseq : 0,
+				reference_no : 0,
 			},
 		});
 		
@@ -163,6 +167,9 @@
 	
 	/* 목록 눌러서 학습자료 목록 조회 */
 	function fn_referenceselect(lectureseq) {
+		
+		cList.cdisflag = true;
+		
 		cList.lectureseq = lectureseq;
 		
 		fn_referenceselectlist();
@@ -188,9 +195,9 @@
  			cList.listitem = returndata.referenceselectlist;
 			cList.totalcnt = returndata.totalcnt;
 			
-			var paginationHtml = getPaginationHtml(pagenum, llistarea.totalcnt, llistarea.pagesize, llistarea.blocksize, 'fn_referenceselectlist');
+			var paginationHtml = getPaginationHtml(pagenum, cList.totalcnt, cList.pagesize, cList.blocksize, 'fn_referenceselectlist');
 			
-			llistarea.pagenavi = paginationHtml;	
+			cList.pagenavi = paginationHtml;	
 			
 		};
 		
@@ -201,7 +208,7 @@
 	
 	/* 학습자료 등록, 수정 모달창 */
 	function fn_referencedownload (referenceno){
-		
+		/* alert("referenceno : "+referenceno);
 		if(referenceno == null || referenceno == "" || referenceno == undefined){
 		
 			var lectureseq = cList.lectureseq;
@@ -212,6 +219,8 @@
 				return;
 			
 			}
+			
+		alert("asdfff"); */
 		
 			// 폼 초기화
 			fn_referenceSelectForm();
@@ -219,18 +228,18 @@
 			// 모달 팝업
 			gfModalPop("#layer1");
 		
-		} else {
+		/* } else {
 			
-			layer1.action = "U";
 			
 			fn_referencemodify(referenceno);
 			
-		}
+		} */
 		
 	}; // fn_referencedownload
 	
 	/* 학습자료 모달창 초기화 폼 */
 	function fn_referenceSelectForm(referenceinfo) {
+		console.log("referenceinfo : " + JSON.stringify(referenceinfo));
 		if(referenceinfo == "" || referenceinfo == null || referenceinfo == undefined){
 			layer1.action = "I";
 			
@@ -241,21 +250,14 @@
 			layer1.reference_file = "";
 			
 		}else{
+			layer1.action = "U";
 			
 			
-/* 			layer1.lecture_seq = cList.lectureseq;
-			layer1.reference_no = object.reference_no;
-			layer1.reference_title = object.reference_title;
-			layer1.reference_content = object.reference_content;
-			
-			layer1.reference_file = object.reference_file; */
-			// 만약 file이 null,"",undefined일경우 .empty이다?
-			
-			layer1.lectureseq = cList.lectureseq;
-			$("#reference_no").val(referenceinfo.reference_no);
-			$("#reference_title").val(referenceinfo.reference_title);
-			$("#reference_content").val(referenceinfo.reference_content);
-			$("#reference_file").val("");
+ 			layer1.lecture_seq = referenceinfo.lectureseq;
+			layer1.reference_no = referenceinfo.reference_no;
+			layer1.reference_title = referenceinfo.reference_title;
+			layer1.reference_content = referenceinfo.reference_content;
+			layer1.reference_file = referenceinfo.reference_file;
 			
 			if(referenceinfo.reference_file == null || referenceinfo.reference_file == "" || referenceinfo.reference_file == undefined){
 				
@@ -297,6 +299,9 @@
 	
 	/* 학습자료 목록 detail */
 	function fn_referencemodify(referenceno){
+		
+		//layer1.newreferenceno = referenceno;
+		
 		var param = {
 				referenceno : referenceno
 		};
@@ -329,8 +334,6 @@
 	      frm.enctype = 'multipart/form-data';
 	      
 	      var dataWithFile = new FormData(frm);
-	      dataWithFile.append("lsearcharea", lsearcharea.);
-	      
 	      
 	      var saveempdvcallback = function(savereturn){
 	    	  
@@ -341,40 +344,14 @@
 	         gfCloseModal();
 	         
 	         fn_referenceselectlist();
+	         //fn_referenceselect(
+	         
 	         
 	      }
 	      
 	      callAjaxFileUploadSetFormData("/tut/savereference.do", "post", "json", true, dataWithFile, saveempdvcallback);
 	      
 	}
-	
-	 /* function fn_savereference(){
-		
-		  var param = {
-				  
-				  	lecture_seq : layer1.lecture_seq,
-					reference_no : layer1.reference_no,
-					reference_title : layer1.reference_title,
-					reference_content : layer1.reference_content,
-					reference_file : layer1.reference_file,
-					action : layer1.action,
-		  }
-	      
-	      var saveempdvcallback = function(savereturn){
-	    	  
-	         console.log("saveempdvcallback: ", JSON.stringify(savereturn)); 
-	         
-	         alert("저장 되었습니다.");
-	         
-	         gfCloseModal();
-	         
-	         fn_referenceselectlist();
-	         
-	      }
-	      
-	      callAjaxFileUploadSetFormData("/tut/savereference.do", "post", "json", true, param, saveempdvcallback);
-	      
-	} */
 	
 	/** 그룹코드 저장 validation */
 	function fn_Validateitem() {
@@ -398,11 +375,11 @@
 </head>
 <body>
 <form id="myForm" action=""  method="">
-	<input type="hidden" name="action" id="action" value="">
+	
 	<input type="hidden" name="referencepagenum" id="referencepagenum" value="">
-	<input type="hidden" name="lectureseq" id="lectureseq" value="">
+	<!-- <input type="hidden" name="lectureseq" id="lectureseq" value=""> -->
 	<input type="hidden" name="slectureseq" id="slectureseq" value="">
-	<input type="hidden" name="referenceno" id="referenceno" value="">
+	
 	
 	<!-- 모달 배경 -->
 	<div id="mask"></div>
@@ -490,13 +467,13 @@
 						<br/>
 						
 						
-						<div id="cList">
+						<div id="cList" v-show="cdisflag">
 						
 						<p class="conTitle">
 							<span>학습자료 목록</span> <span class="fr">
 
-							    <a	class="btnType blue" href="javascript:fn_referencedownload();" name="modal"><span>자료등록</span></a>
-							</span>
+							    <a href=""	class="btnType blue" @click.prevent="fn_referencedownload(newreferenceno)" name="modal"><span>자료등록</span></a>
+							</span> 
 						</p>
 							
 							<table class="col">
@@ -528,7 +505,7 @@
 										<tr>
 											<td>{{ item.reference_title }}</td>
 											<td>{{ item.reference_date }}</td>
-											<td>자료명</td>
+											<td>{{ item.reference_file }}</td>
 											<td>
 												<a href="" @click.prevent="fn_referencemodify(item.reference_no)">
 													<span>수정 / 삭제</span>
@@ -538,9 +515,9 @@
 									</tbody>
 								</template>
 							</table>
+						<div class="paging_area"  id="referenceListPagination" v-html="pagenavi"> </div>
 						</div>
 	
-						<div class="paging_area"  id="referenceListPagination"> </div>
 						
 					</div> <!--// content -->
 
@@ -553,6 +530,9 @@
 
 	<!-- 모달팝업 -->
 	<div id="layer1" class="layerPop layerType2" style="width: 600px;">
+	<input type="hidden" name="action" id="action" v-model="action">
+	<input type="hidden" name="reference_no" id="reference_no" v-model="reference_no">
+	<input type="hidden" name="lectureseq" id="lectureseq" v-model="lectureseq">
 		<dl>
 			<dt>
 				<strong>학습자료 등록 / 수정</strong>
@@ -571,7 +551,7 @@
 					<tbody>
 						<tr>
 							<input type="hidden" class="inputTxt p100" name="lecture_seq" id="lecture_seq" v-model="lecture_seq" readonly/>
-							<input type="hidden" class="inputTxt p100" name="reference_no" id="reference_no" v-model="reference_no" readonly/>
+							<input type="hidden" class="inputTxt p100" name="newreferenceno" id="newreferenceno" v-model="newreferenceno" readonly/>
 						</tr>
 						<tr>
 							<th scope="row">제목 <span class="font_red">*</span></th>

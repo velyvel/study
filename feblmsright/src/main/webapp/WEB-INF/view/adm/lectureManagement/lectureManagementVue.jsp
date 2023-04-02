@@ -35,9 +35,8 @@ select[readonly] {
 	
 	/** OnLoad event */ 
 	$(function() {
-		
 		// 버튼 이벤트 등록
-		fRegisterButtonClickEvent();
+		fRegisterButtonClickEvent(); 
 		
 		init(); 
 		
@@ -90,7 +89,7 @@ select[readonly] {
 			
 		lectureList = new Vue({
 			
-			el : "#lectureList",
+			el : "#lectureList", 
 			data : {
 				listitem : [],
 				totalcnt : 0,
@@ -123,21 +122,25 @@ select[readonly] {
 				lecture_goal : "",
 				lectureConfirmDiv : "",
 				roomStatusDiv : "",
-				loginID : "",
-				test_no : "",
-				room_no : "",
-				lecture_confirm : "",
-				room_status : "",
+				loginID : [],
+				test_no : [],
+				room_no : [],
+				sloginID : "",
+				stest_no : "",
+				sroom_no : "",
+				lecture_confirm : "N",
+				room_status : "N",
 				test_title : "",
 				room_name : "",
-				ltest_no_bind : false,
-				room_no_bind : false,
+				loginIDShow1 : false,
+				loginIDShow2 : false,
 			}
 		});
+		
 	}
 		
 	//강의 목록 조회
-	function lectureListSearch(pagenum) {
+	function lectureListSearch(pagenum) { 
 		console.log("lectureListSearch");
 		
 		pagenum = pagenum || 1;
@@ -151,7 +154,7 @@ select[readonly] {
 		} else checkBox = "";
 		
 			
-		console.log(checkBox);
+		console.log(checkBox);  
 		
 		var param = {
 				pagenum : pagenum,
@@ -232,8 +235,8 @@ select[readonly] {
 
 		if(selectLecture.loginID == null || selectLecture.loginID == "" || selectLecture.loginID == undefined){	
 			
-			
-			lectureSelect.loginID = "teacher"
+			lectureSelect.loginID = "";
+			lectureSelect.sloginID = "";
 			lectureSelect.action = "I";
 			lectureSelect.lecture_total = "";
 			lectureSelect.lecture_start = "";
@@ -241,21 +244,25 @@ select[readonly] {
 			lectureSelect.lecture_goal = "";
 			lectureSelect.test_no = "";
 			lectureSelect.room_no = "";
-			lectureSelect.ltest_no_bind = false;
-			lectureSelect.room_no_bind = false;
+			lectureSelect.stest_no = "";
+			lectureSelect.sroom_no = "";
 			lectureSelect.test_title = "";
 			lectureSelect.room_name = "";
+			lectureSelect.loginIDShow1 = true;
+			lectureSelect.loginIDShow2 = false;
 			
-			lectureSelect.lectureNo = "";
-			lectureSelect.lectureSeq = "";
-			lectureSelect.roomSeq = "";
+			lectureSelect.lectureNo = ""; 
+			lectureSelect.lectureSeq = ""; 
+			lectureSelect.roomSeq = ""; 
 			//$("#btnDeleteLecture").hide();
 			
-			userCombo("usr", "B", lectureSelect.loginID, "sel", "");
+			userCombo("usr", "B", "loginID", "sel", ""); 
 			
-			selectComCombo("test", lectureSelect.test_no, "sel", "");
+			selectComCombo("test", "test_no", "sel", "");  
 			
-			selectComCombo("room:N", lectureSelect.room_no, "sel", "");	
+			selectComCombo("room:N", "room_no", "sel", "");	
+			
+			console.log("데이터 : "+lectureSelect.room_no+", "+lectureSelect.loginID+", "+lectureSelect.test_no);
 			
 		}else{
 
@@ -264,8 +271,6 @@ select[readonly] {
 			lectureSelect.room_no = selectLecture.room_no; 
 			lectureSelect.lecture_confirm = selectLecture.lecture_confirm;
 			lectureSelect.room_status = selectLecture.room_status;
-			lectureSelect.ltest_no_bind = true;
-			lectureSelect.room_no_bind = true;
 
 			lectureSelect.lecture_total = selectLecture.lecture_total;
 			lectureSelect.lecture_start = selectLecture.lecture_start;
@@ -276,12 +281,16 @@ select[readonly] {
 			lectureSelect.roomSeq = selectLecture.room_seq;
 			lectureSelect.test_title = selectLecture.test_title;
 			lectureSelect.room_name = selectLecture.room_name;
+			lectureSelect.loginIDShow1 = false;
+			lectureSelect.loginIDShow2 = true;
 			
 			lectureSelect.action = "U";
 			
+			console.log("데이터 : "+lectureSelect.room_no+", "+lectureSelect.loginID+", "+lectureSelect.test_no);
+			
 			console.log("data : "+lectureSelect.loginID+lectureSelect.test_no+lectureSelect.room_no); 
 			 
-			//$("#btnDeleteLecture").show();
+			//$("#btnDeleteLecture").show(); 
 			
 		}
 		
@@ -298,7 +307,15 @@ select[readonly] {
 		var selectcallback = function(selectresult){
 			console.log("selectresult : " + JSON.stringify(selectresult));	
 			
+			var room_no = selectresult.lectureInfo.room_no;
+			
+			/* console.log("디테일 : "+room_no);
+			
+			lectureSelect.room_no = room_no; */
+			
 			fn_initForm(selectresult.lectureInfo);
+			
+			/* userCombo("usr", "B", "loginID", "sel", ""); */
 			
 			//모달 팝업
 			gfModalPop("#layer1");
@@ -314,6 +331,10 @@ select[readonly] {
 		var action = lectureSelect.action;
 		var lecture_start = lectureSelect.lecture_start;
 		var lecture_end = lectureSelect.lecture_end;
+		var loginID;
+		var testNo;
+		var roomNo;
+		
 		if(action == "I" || action == "U"){
 			if(!fn_validateitem()){
 				return;
@@ -330,14 +351,28 @@ select[readonly] {
 				return false;
 			}
 		}
+		 
+		if(action == "I"){
+			loginID = lectureSelect.sloginID;
+			testNo = lectureSelect.stest_no;
+			roomNo = lectureSelect.sroom_no;
+			alert("asddd");
+		}else{
+			loginID = lectureSelect.loginID;
+			testNo = lectureSelect.test_no;
+			roomNo = lectureSelect.room_no;
+			alert("1233");
+		} 
+		//console.log("sloginID, stestNo, sroomNo : "+lectureSelect.sloginID+", "+lectureSelect.stestNo+", "+lectureSelect.sroomNo);
+		console.log("loginID, testNo, roomNo : "+lectureSelect.loginID[0]+", "+lectureSelect.test_no[0]+", "+lectureSelect.room_no[0]);
 		var param = {
 				roomSeq : lectureSelect.roomSeq,
 				lectureSeq : lectureSelect.lectureSeq,
 				lectureNo : lectureSelect.lectureNo,
 				action : lectureSelect.action,
-				loginID : lectureSelect.loginID,
-				testNo : lectureSelect.test_no,
-				roomNo : lectureSelect.room_no,
+				loginID : loginID,
+				testNo : testNo,
+				roomNo : roomNo,
 				lectureTotal : lectureSelect.lecture_total,
 				lectureStart: lectureSelect.lecture_start,
 				lectureEnd: lectureSelect.lecture_end,
@@ -362,9 +397,9 @@ select[readonly] {
 	function fn_validateitem(){
 		var chk = checkNotEmpty(
 				[
-						[ "loginID", "강사명을 입력해 주세요." ]
+						[ "loginID[0]", "강사명을 입력해 주세요." ]
 					,	[ "lecture_total", "마감인원을 입력해 주세요" ]
-					,	[ "lecture_start", "시작날짜를 입력해 주세요" ]
+					,	[ "lecture_start", "시작날짜를 입력해 주세요" ] 
 					,	[ "lecture_end", "종료날짜를 입력해 주세요" ]
 					,	[ "lecture_goal", "수업목표를 입력해 주세요" ]
 					,	[ "lecture_confirm", "강의 종료 여부를 입력해 주세요" ]
@@ -505,7 +540,7 @@ select[readonly] {
 								<thead>
 									<tr>
 										<th scope="col">강의번호</th>
-										<th scope="col">학생명</th>
+										<th scope="col">학생명</th> 
 										<th scope="col">아이디</th>
 										<th scope="col">과정명</th>
 										<th scope="col">전화번호</th>
@@ -514,7 +549,7 @@ select[readonly] {
 									<template v-if="totalcnt === 0">
 										<tbody>
 											<tr>
-												<td colspan="4">데이터가 존재하지 않습니다.</td>
+												<td colspan="5">데이터가 존재하지 않습니다.</td>
 											</tr>
 										</tbody>
 									</template>
@@ -560,21 +595,24 @@ select[readonly] {
                   <col width="120px">
                   <col width="*">
                   <col width="120px">
-                  <col width="*">
+                  <col width="*"> 
                </colgroup>
 
                <tbody>
                   <tr>
-                     <th scope="row">강사ID <span class="font_red">*</span></th>
-                     <td colspan="3"><input type='text' class='inputTxt p100' name='loginID' v-model='loginID' id='loginID'  readonly /></td>                        
+                     <th scope="row">강사ID <span class="font_red">*</span></th>    
+                     <td v-show="loginIDShow1"><select name='loginID' id='loginID' v-model='sloginID' style='width: 150px;'></select></td>
+                     <td v-show="loginIDShow2" colspan="3"><input type='text' class='inputTxt p100' name='loginID' v-model='loginID' id='loginID'  readonly /></td>
                   </tr>
                    <tr>
                      <th scope="row">시험과목 <span class="font_red">*</span></th>
-                     <td colspan="3"><input type='text' class='inputTxt p15' name='test_no' v-model='test_no' id='test_no'  v-bind:readonly="ltest_no_bind" /> Test 명 : {{test_title}} </td>
+                     <td v-show="loginIDShow1"><select name='test_no' id='test_no' v-model='stest_no' style='width: 150px;'></select></td>
+                     <td v-show="loginIDShow2" colspan="3"><input type='text' class='inputTxt p15' name='test_no' v-model='test_no' id='test_no'  readonly /> Test 명 : {{test_title}} </td>
                   </tr>
                   <tr>
                      <th scope="row">강의실 <span class="font_red">*</span></th>
-                     <td colspan="3"><input type='text' class='inputTxt p15' name='room_no' v-model='room_no' id='room_no'  v-bind:readonly="room_no_bind" />강의실 명 : {{room_name}}</td>
+                     <td v-show="loginIDShow1"><select name='room_no' id='room_no' v-model='sroom_no' style='width: 150px;'></select></td>
+                     <td v-show="loginIDShow2" colspan="3"><input type='text' class='inputTxt p15' name='room_no' v-model='room_no' id='room_no'  readonly />강의실 명 : {{room_name}}</td>
                   </tr> 
                   <tr>
                      <th scope="row">마감인원 </th>

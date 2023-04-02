@@ -27,6 +27,8 @@
 	var lecturePlan;
 	var taskList;
 	var tasklayer1;
+	var taskSendInfo;
+	var sendDetail;
 	
 	
 	/** OnLoad event */ 
@@ -140,6 +142,7 @@
 				btnUpdateTask : false,
 				btnSaveTask : false,
 				action : "",
+				taskName : "",
 			}
 		});
 		
@@ -163,6 +166,7 @@
 				sendTitle : "",
 				sendContent : "",
 				fileInfo : "",
+				sendNo : 0,
 			}
 		})
 	}
@@ -292,17 +296,18 @@
 	/* 과제 상세 조회 - 모달*/
 	function fn_taskDetail(planNo){
 		
+		taskList.planNo = planNo;
+
 		var param = {
 			planNo : planNo
 		};
-		
-		taskList.planNo = planNo;
 		
 		var detailCallback = function(detailresult){
 			console.log("detailCallback : " + JSON.stringify(detailresult));
 			
 			if(detailresult.taskInfo == null){
 				fn_initForm();
+				console.log("과제등록 안 #planNo 제이쿼리 값 : "+$("#planNo").val());
 				gfModalPop("#tasklayer1");
 			}else{
 			
@@ -314,6 +319,7 @@
 				tasklayer1.taskEnd = taskInfo.taskTitle;
 				tasklayer1.btnSaveTask = false;
 				fn_initForm(taskInfo);
+				console.log("과제수정 안 #planNo 제이쿼리 값 : "+$("#planNo").val());
 				gfModalPop("#tasklayer1"); 
 			}
 		}
@@ -370,6 +376,8 @@
 			tasklayer1.content = object.taskContent;
 			tasklayer1.taskStart = object.taskStart;
 			tasklayer1.taskEnd = object.taskEnd;
+			tasklayer1.taskName = object.taskName;
+			
 			tasklayer1.selfile = "";  
 			tasklayer1.btnUpdateTask = true;
 			tasklayer1.btnSaveTask = false;  
@@ -387,6 +395,8 @@
 	
 	function fn_insertTask(){
 		
+		//alert("action : "+tasklayer1.action);
+		
 		var action =  tasklayer1.action;   
 		
 		if(action == "I" || action == "U"){
@@ -397,7 +407,12 @@
 		
 	        var frm = document.getElementById("myForm");
 			frm.enctype = 'multipart/form-data';
+			
+		//	frm.action = action;
 			var dataWithFile = new FormData(frm);
+			
+			console.log("dataWithFile : " + JSON.stringify(frm));
+			//dataWithFile.action("action", action); 
 			
 			var insertCallback = function(data){
 				console.log("insertCallback: ", JSON.stringify(data)); 
@@ -447,7 +462,7 @@
 	
 	/* 제출 과제 상세 조회 - 모달*/
 	function fn_taskSendDetail(sendNo) {
-
+		
 		var param = {
 			sendNo : sendNo
 		};
@@ -481,6 +496,24 @@
 		callAjax("/tut/taskSendDetail.do", "post", "json", "false", param, sendDetailCallback);
 	} 
 	
+	/*다운로드*/
+	function fn_fileDounload(){
+		
+		var sendNo = sendDetail.sendNo;
+		
+		alert(sendNo)
+		
+		if(sendNo == null){
+			return;
+		}
+		
+		var params = "<input type='hidden' name='sendNo' value='" + sendNo +"'/>";
+		
+		jQuery(
+				"<form action='/tut/taskSendFile.do' method='post'>"
+				+ params + "</form>").appendTo('body').submit().remove();
+	}
+	
 	function fn_Validateitem() {
 		var chk = checkNotEmpty(
 				[
@@ -504,7 +537,7 @@
 
 </head>
 <body>
-<form id="myForm" action=""  method="">
+	
 	<!-- 모달 배경 -->
 	<div id="mask"></div>
 
@@ -621,9 +654,10 @@
 						<br>
 						<br>
 						<div id="taskList" v-show="taskList">
+						<input type="hidden" name="planNo" v-model="planNo" id="planNo">
 							<p class="conTitle">
 								<span>과제 관리</span> <span class="fr"> 
-								    <a href="" class="btnType blue" @click.prevent="fn_taskDetail()" name="modal" id="taskmodal" v-show="taskmodal"><span>과제등록</span></a>
+								    <a href="" class="btnType blue" @click.prevent="fn_taskDetail(planNo)" name="modal" id="taskmodal" v-show="taskmodal"><span>과제등록</span></a>
 								</span>
 							</p>
 							<table class="col">
@@ -675,6 +709,7 @@
 
 	<!-- 과제 등록 & 수정 & 조회 팝업 -->
 	<div id="tasklayer1" class="layerPop layerType2" style="width: 500px;">
+		<input type="hidden" name="action" id="action" v-model="action"> 
 		<dl>
 			<dt>
 				<strong>과제 관리</strong>
@@ -797,7 +832,7 @@
 					</colgroup>
 
 					<tbody>
-						<input type="hidden" class="inputTxt p100" name="sendNo" id="sendNo" />
+						<input type="hidden" class="inputTxt p100" name="sendNo" id="sendNo" v-model="sendNo" />
 						<tr>
 							<th scope="row">학생명</th>
 						<td><div id="studentName" v-html="studentName"></div></td>
